@@ -1,0 +1,36 @@
+<package>
+  <name>optitrack_driver</name>
+  <version>2.0.0</version>
+  <description>Modification of ros_vrpn_client to output euler angles instead of quaternions</description>
+  <maintainer email="ajpl.delacroix@gmail.com">Jean-Pierre de la Croix</maintainer>
+
+  <license>BSD</license>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Ben Davis</author>
+  <author>Sung Lee</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+  <build_depend>roscpp</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>bullet</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>roscpp</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>bullet</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+  <!-- <test_depend>roscpp</test_depend> -->
+  <!-- <test_depend>tf</test_depend> -->
+  <!-- <test_depend>bullet</test_depend> -->
+  <!-- <test_depend>geometry_msgs</test_depend> -->
+
+</package>

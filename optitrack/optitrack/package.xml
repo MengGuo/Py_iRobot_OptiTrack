@@ -1,0 +1,25 @@
+<package>
+  <name>optitrack</name>
+  <version>2.0.0</version>
+  <description>optitrack</description>
+  <maintainer email="ajpl.delacroix@gmail.com">Jean-Pierre de la Croix</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/optitrack</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author>Jean-Pierre de la Croix</author>
+
+  <!-- Dependencies which this package needs to build itself. -->
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- Dependencies needed to compile this package. -->
+
+
+  <!-- Dependencies needed after this package is compiled. -->
+  <run_depend>optitrack_driver</run_depend>
+
+  <!-- Dependencies needed only for running tests. -->
+
+</package>
