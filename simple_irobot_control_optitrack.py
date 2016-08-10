@@ -8,8 +8,8 @@ from math import atan2, sin, cos, sqrt
 import matplotlib.patches
 from matplotlib import pyplot
 
-import irobot_driver.msg
-import optitrack_driver.msg
+from irobot.msg import UnicycleControl
+from optitrack_driver.msg import OptiTrackData
 import time 
 
 def norm(pose1, pose2):
@@ -70,9 +70,9 @@ def OptiTrackCallback(optidata):
 
 
 def SendControl(ContPublisher, control):
-    ContMsg = irobot_driver.msg.UnicycleControlInput()
-    ContMsg.linear_velocity = control[0]
-    ContMsg.angular_velocity = control[1]
+    ContMsg = irobot.msg.UnicycleControl()
+    ContMsg.linearV = control[0]
+    ContMsg.angularV = control[1]
     ContPublisher.publish(ContMsg)
 
 def SimpleControl(pose, goal):
@@ -124,15 +124,12 @@ rospy.init_node('gg_run')
 #publish to
 #----------
 for i,a in enumerate(RO_ID):
-    msg_name = '/K%d/irobot_send_control' %a
-    mControlPublisher[a] = rospy.Publisher(msg_name,
-                                           irobot_driver.msg.UnicycleControlInput,
-                                           queue_size = 100)
+    msg_name = 'Brain2/cmd_level'
+    mControlPublisher[a] = rospy.Publisher(msg_name, UnicycleControl, queue_size = 100)
 #----------
 #subscribe to
 #----------
-rospy.Subscriber('/optitrack/data', optitrack_driver.msg.OptiTrackData,
-                 OptiTrackCallback)
+rospy.Subscriber('/optitrack/data', OptiTrackData, OptiTrackCallback)
 #----------
 #main loop
 #----------
