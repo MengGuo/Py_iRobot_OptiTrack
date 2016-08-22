@@ -11,8 +11,8 @@ import random
 
 import sys
 
-# import workspace and robot model
-from model import best_all_plan, prod_dra, initial_state
+
+from model import best_plan, prod_dra_edges, initial_state
 
 
 def confirm_callback(data):
@@ -33,7 +33,7 @@ def cell_pose_callback(data):
     print 'Robot position received: %s' %str(cell_pose)      
 
     
-def plan_execution(plan_file):
+def plan_execution():
     global confirm
     global cell_pose
     rospy.init_node('plan_execution')
@@ -58,6 +58,7 @@ def plan_execution(plan_file):
             next_action_msg.header = t
             next_action_msg.name = next_action_name
             print 'Next action: %s' %next_action_name
+            U.append(next_action_name)
             #
             status_msg = status()
             labelset = set(current_state[1])
@@ -73,9 +74,8 @@ def plan_execution(plan_file):
             t += 1
             print 'Action %s done!' %next_action_name
             print 'Robot cell pose: %s' %str(cell_pose)
-            next_state = Find_Next_State(prod_mdp, current_state, next_action_name, cell_pose)
+            next_state = Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose)
             current_state = next_state[:]
-            U.append(next_action_name)
         except rospy.ROSInterruptException:
             print 'System trajectory:', X
             print 'Control actions:', U
@@ -114,14 +114,15 @@ def Find_Action(best_plan, current_state):
     return next_action_name, next_segment
 
 
-def Find_Next_State(prod_mdp, current_state, next_action_name, cell_pose):
+def Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose):
     S = []
     P = []
-    for next_state in prod_mdp.successors_iter(current_state):
-        prop = prod_mdp[prev_state][next_state]['prop']
-        if ((next_action_name in prop.keys()) and (next_state[0] == raw_pose)):
-            S.append(next_state)
-            P.append(prop[next_action_name][0])
+    for (f_state, t_state) in prod_dra_edges.iterkeys():
+        if f_state == current_state:
+            prop = prod_dra_edges[(f_state, t_state)]
+            if ((next_action_name in prop.keys()) and (next_state[0] == cell_pose)):
+                S.append(next_state)
+                P.append(prop[next_action_name][0])
     rdn = random.random()
     pc = 0
     for k, p in enumerate(P):

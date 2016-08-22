@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(irobot)
+project(mdp_tg)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -68,7 +68,12 @@ add_message_files(
  generate_messages(
    DEPENDENCIES
    std_msgs
-   UnicycleControl
+   status
+   raw_pose
+   control
+   cell_pose
+   confirmation
+   action
  )
 
 ###################################
@@ -82,7 +87,7 @@ add_message_files(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES irobot
+#  LIBRARIES mdp_tg
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -99,19 +104,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(irobot
-#   src/${PROJECT_NAME}/irobot.cpp
+# add_library(mdp_tg
+#   src/${PROJECT_NAME}/mdp_tg.cpp
 # )
 
 ## Declare a cpp executable
-# add_executable(irobot_node src/irobot_node.cpp)
+# add_executable(mdp_tg_node src/mdp_tg_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(irobot_node irobot_generate_messages_cpp)
+# add_dependencies(mdp_tg_node mdp_tg_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(irobot_node
+# target_link_libraries(mdp_tg_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -130,7 +135,7 @@ include_directories(
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS irobot irobot_node
+# install(TARGETS mdp_tg mdp_tg_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -155,7 +160,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_irobot.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_mdp_tg.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

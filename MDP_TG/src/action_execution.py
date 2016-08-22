@@ -77,7 +77,7 @@ def action_execution():
                 rospy.sleep(0.05)
                 count_t += 0.05
             print 'Confirmation for action %s at time %s sent' %(str(action_name), str(t))
-            # send pose msg
+            # send cell_pose msg
             cell_pose_msg = cell_pose()
             [cell_x, cell_y, orientation] = Raw_To_Cell_Pose(raw_pose, grid)
             cell_pose_msg.x = cell_x
@@ -101,6 +101,7 @@ def Find_Goal(start_pose, grid, action_name):
     P =[]
     G = []
     if action_name == 'FR':
+        # create uncertainty in the 
         P = [0.1, 0.8, 0.1]
         if -0.25*PI <= theta <= 0.25*PI:
             G = [(grid, -grid, 0), (grid, 0, 0), (grid, grid, 0)]
