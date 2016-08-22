@@ -13,7 +13,7 @@ import matplotlib.patches
 from matplotlib import pyplot
 
 # import workspace and robot model
-from model import motion_mdp, WS_d, WS_node_dict
+from model import motion_mdp_edges, WS_d, WS_node_dict
 
 
 def raw_pose_callback(data):
@@ -43,7 +43,7 @@ def status_callback(data):
     print 'Robot status received: %s' %str(status)
 
 
-def visualize_workspace(figure, motion_mdp, WS_d, WS_node_dict, raw_pose, cell_pose, status):
+def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status):
     pyplot.cla()
     fig = figure
     ax = fig.add_subplot(111)
@@ -69,10 +69,11 @@ def visualize_workspace(figure, motion_mdp, WS_d, WS_node_dict, raw_pose, cell_p
     # plot shadow
     x = cell_pose[:]
     t_x_list = []
-    for t_x in motion_mdp.successors_iter(x):
-        prop = motion_mdp[x][t_x]['prop']
-        if u in prop.keys():
-            t_x_list.append((t_x, prop[u][0]))
+    for (f_x, t_x) in motion_mdp_edges.iterkeys():
+        if f_x == x:            
+            prop = motion_mdp_edges[(f_x, t_x)]
+            if u in prop.keys():
+                t_x_list.append((t_x, prop[u][0]))
     #
     for new_x in t_x_list:
         xl = new_x[0][0]
@@ -160,7 +161,7 @@ def plot_workspace():
     rospy.sleep(2)
     while not rospy.is_shutdown():
         try:
-           figure = visualize_workspace(figure, motion_mdp, WS_d, WS_node_dict, raw_pose, cell_pose, status):
+           figure = visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status):
         except rospy.ROSInterruptException:
             print 'Visualization workspace stopped'
 
