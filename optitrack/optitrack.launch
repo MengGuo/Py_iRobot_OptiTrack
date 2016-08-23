@@ -1,0 +1,12 @@
+<launch>
+
+<!--
+Here add all the instances of optitrack objects to be tracked. The node name must match the name on the optitrack server. The numeric id parameter is equivalent to the Vicon id under the old system and should be unique.
+-->	
+	<node name="Brain2Camera" pkg="optitrack_driver" type = "optitrack"> 
+		<param name="vrpn_server_ip" value="192.168.1.103" />
+		<param name="numeric_id" value="1" />
+	</node>
+
+</launch>
+	

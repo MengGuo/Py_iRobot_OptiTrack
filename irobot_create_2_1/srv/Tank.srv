@@ -1,0 +1,5 @@
+bool clear
+int16 left
+int16 right
+---
+bool success

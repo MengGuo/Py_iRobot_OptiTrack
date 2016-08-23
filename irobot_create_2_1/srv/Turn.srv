@@ -1,0 +1,4 @@
+bool clear
+int16 turn
+---
+bool success

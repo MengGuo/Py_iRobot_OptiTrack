@@ -1,0 +1,20 @@
+<package>
+  <description brief="irobot_create_2_1">
+ irobot_create_2_1 is a ROS driver for the iRobot iCreate.
+  </description>
+  <author>Graylin Trevor Jay</author>
+  <email>tjay@cs.brown.edu</email>
+  <license>Creative Commons Attribution</license>
+  <review status="unreviewed" notes=""/>
+
+  <rosdep name="python-serial"/>
+  <depend package="rospy"/>
+  <depend package="geometry_msgs"/>
+  <depend package="tf"/>
+  <depend package="nav_msgs"/>
+
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp"/>
+  </export>
+
+</package>

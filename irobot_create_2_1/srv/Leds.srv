@@ -1,0 +1,6 @@
+bool advance
+bool play
+uint8 color
+uint8 intensity
+---
+bool success

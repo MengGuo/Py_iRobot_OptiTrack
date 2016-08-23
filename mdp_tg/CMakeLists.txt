@@ -48,6 +48,12 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
    FILES
    UnicycleControl.msg
+   status.msg
+   raw_pose.msg
+   control.msg
+   cell_pose.msg
+   confirmation.msg
+   action.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -68,12 +74,6 @@ add_message_files(
  generate_messages(
    DEPENDENCIES
    std_msgs
-   status
-   raw_pose
-   control
-   cell_pose
-   confirmation
-   action
  )
 
 ###################################
