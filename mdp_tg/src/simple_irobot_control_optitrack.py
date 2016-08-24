@@ -103,10 +103,11 @@ pyplot.ion()
 pyplot.draw()
 time.sleep(1)
 ## agent ID should be in-line with the control.launch and optitrak.launch
-RO_ID = [1]
+RO_ID = [1,]
+RO_NAME = ['Brain2',]
 NO_RS = len(RO_ID)
 ## agent goals ordered by RO_ID
-GOAL = [(0, -1, PI*0.5), (-0, -0, PI)]
+GOAL = [(-1, 0, PI*0.5),]
 # limit v \in [-0.3148,0.3148] and w \in [-2.2763,2.2763]
 LINEAR_VEL = 0.15
 ANGULAR_VEL = 0.3
@@ -124,7 +125,7 @@ rospy.init_node('simple_control')
 #publish to
 #----------
 for i,a in enumerate(RO_ID):
-    msg_name = 'Brain2/cmd_level'
+    msg_name = '%s/cmd_vel' %RO_NAME[i]
     mControlPublisher[a] = rospy.Publisher(msg_name, geometry_msgs.msg.Twist, queue_size = 100)
 #----------
 #subscribe to

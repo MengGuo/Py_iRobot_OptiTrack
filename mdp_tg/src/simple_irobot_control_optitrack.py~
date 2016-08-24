@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib, rospy
-roslib.load_manifest('YOUR_MODULE_NAME')
+roslib.load_manifest('mdp_tg')
 import sys
 from math import pi as PI
 from math import atan2, sin, cos, sqrt
@@ -8,7 +8,7 @@ from math import atan2, sin, cos, sqrt
 import matplotlib.patches
 from matplotlib import pyplot
 
-from irobot.msg import UnicycleControl
+import geometry_msgs.msg
 from optitrack_driver.msg import OptiTrackData
 import time 
 
@@ -70,9 +70,9 @@ def OptiTrackCallback(optidata):
 
 
 def SendControl(ContPublisher, control):
-    ContMsg = irobot.msg.UnicycleControl()
-    ContMsg.linearV = control[0]
-    ContMsg.angularV = control[1]
+    ContMsg = geometry_msgs.msg.Twist()
+    ContMsg.linear.x = control[0]
+    ContMsg.angular.z = control[1]
     ContPublisher.publish(ContMsg)
 
 def SimpleControl(pose, goal):
@@ -103,10 +103,11 @@ pyplot.ion()
 pyplot.draw()
 time.sleep(1)
 ## agent ID should be in-line with the control.launch and optitrak.launch
-RO_ID = [8, 10]
+RO_ID = [1,]
+RO_NAME = ['Brain2',]
 NO_RS = len(RO_ID)
 ## agent goals ordered by RO_ID
-GOAL = [(0, -1, PI*0.5), (-0, -0, PI)]
+GOAL = [(-1, 0, PI*0.5),]
 # limit v \in [-0.3148,0.3148] and w \in [-2.2763,2.2763]
 LINEAR_VEL = 0.15
 ANGULAR_VEL = 0.3
@@ -119,13 +120,13 @@ for i,a in enumerate(RO_ID):
     position[a] = None #x,y,theta
     goal[a] = GOAL[i]
     mControlPublisher[a] = None
-rospy.init_node('gg_run')
+rospy.init_node('simple_control')
 #----------
 #publish to
 #----------
 for i,a in enumerate(RO_ID):
-    msg_name = 'Brain2/cmd_level'
-    mControlPublisher[a] = rospy.Publisher(msg_name, UnicycleControl, queue_size = 100)
+    msg_name = '%s/cmd_vel' %RO_NAME[i]
+    mControlPublisher[a] = rospy.Publisher(msg_name, geometry_msgs.msg.Twist, queue_size = 100)
 #----------
 #subscribe to
 #----------
