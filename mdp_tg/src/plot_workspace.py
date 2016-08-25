@@ -44,7 +44,7 @@ def status_callback(data):
     u = data.action
     m = data.segment
     status_data = [l, u, m]
-    print 'Robot status received: %s' %str(status_data)
+    # print 'Robot status received: %s' %str(status_data)
 
 
 def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status):
@@ -73,7 +73,7 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         car=[(xl+0.1,yl+0.1), (xl+0.1,yl-0.1), (xl, yl-0.2), (xl-0.1, yl-0.1), (xl-0.1,yl+0.1)]
     elif dl == 'W':
         car=[(xl+0.1,yl-0.1), (xl-0.1,yl-0.1), (xl-0.2, yl), (xl-0.1, yl+0.1), (xl+0.1,yl+0.1)]
-    polygon = Polygon(car, fill = True, facecolor='black', edgecolor='black', lw=5, zorder = 1)
+    polygon = Polygon(car, fill = False, facecolor='grey', edgecolor='black', lw=2, zorder = 2)
     ax.add_patch(polygon)
     #----- draw the robot raw_pose
     print 'robot raw pose', raw_pose
@@ -100,7 +100,7 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     actstr = r''
     for s in u:
         actstr += s
-    ax.text(xl, yl+0.1, r'$%s$' %str(actstr), fontsize = 13, fontweight = 'bold', color='red')
+    ax.text(xl, yl+0.2, r'$%s$' %str(actstr), fontsize = 16, fontweight = 'bold', color='red')
     # plot shadow
     x = cell_pose[:]
     t_x_list = []
@@ -167,8 +167,8 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         if text:
             ax.text(node[0]-0.15, node[1], r'%s' %text, fontsize = 13, fontweight = 'bold')        
     ax.set_aspect('equal')
-    ax.set_xlim(0, 2.6)
-    ax.set_ylim(0, 1.7)
+    ax.set_xlim(-0.2, 2.6)
+    ax.set_ylim(-0.2, 1.7)
     ax.set_xlabel(r'$x(m)$')
     ax.set_ylabel(r'$y(m)$')
     #fig.subplots_adjust(0.003,0.062,0.97,0.94)

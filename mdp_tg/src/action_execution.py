@@ -4,7 +4,7 @@ import Queue
 roslib.load_manifest('mdp_tg')
 import rospy
 
-from math import sqrt, cos, sin, radians
+from math import sqrt, cos, sin, radians, atan2
 from math import pi as PI
 from numpy import floor, random
 
@@ -14,7 +14,7 @@ from mdp_tg.msg import action, confirmation, cell_pose, raw_pose
 import sys
 
 # import workspace and robot model
-from load_model import WS_d, initial_state
+from load_model import WS_d, initial_state, motion_mdp_edges
 
 def distance(pose1, pose2):
     return sqrt((pose1[0]-pose2[0])**2+(pose1[1]-pose2[1])**2)
@@ -24,7 +24,6 @@ def next_action_callback(data):
     global next_action_data   
     header = data.header
     name = data.name
-    done = data.done
     next_action_data = [header, name]
     print 'Next action received: %s' %str(next_action_data)
 
@@ -84,22 +83,23 @@ def action_execution(robot_name='Brain2'):
             action_name = next_action_data[1]
             start_pose = raw_pose_data[:]
             goal_pose = Find_Goal(cell_pose_data, grid, action_name)
-            while ((distance(raw_pose_data[0:2], goal_pose[0:2]) > 0.01) or (abs(raw_pose_data[2]-goal_pose[2]) > 0.1*PI)):
-                # send control msg
-                print 'Navigation to goal'
-                linearVelo, angularVelo = Find_Control(raw_pose_data, goal_pose)
-                control_msg = geometry_msgs.msg.Twist()
-                control_msg.linear.x = linearVelo
-                control_msg.angular.z = angularVelo
-                control_pub.publish(control_msg)
-                print 'Control cmds published: %s' %str((linearVelo, angularVelo))
-                rospy.sleep(0.5) # TODO: check how fast the input can change
-                cell_pose_msg = cell_pose()
-                cell_pose_msg.x = cell_pose_data[0]
-                cell_pose_msg.y = cell_pose_data[1]
-                cell_pose_msg.orientation = cell_pose_data[2]
-                cell_pose_pub.publish(cell_pose_msg)
-            print 'Goal pose reached: %s' %(str(goal_pose))
+            while not rospy.is_shutdown():
+                if ((distance(raw_pose_data[0:2], goal_pose[0:2]) > 0.1) or (abs(raw_pose_data[2]-goal_pose[2]) > 0.1*PI)):
+                    # send control msg
+                    # print 'Navigation to goal'
+                    linearVelo, angularVelo = Find_Control(raw_pose_data, goal_pose)
+                    control_msg = geometry_msgs.msg.Twist()
+                    control_msg.linear.x = linearVelo
+                    control_msg.angular.z = angularVelo
+                    control_pub.publish(control_msg)
+                    print 'Control cmds published: %s' %str((linearVelo, angularVelo))
+                    rospy.sleep(0.5) # TODO: check how fast the input can change
+                    cell_pose_msg = cell_pose()
+                    cell_pose_msg.x = cell_pose_data[0]
+                    cell_pose_msg.y = cell_pose_data[1]
+                    cell_pose_msg.orientation = cell_pose_data[2]
+                    cell_pose_pub.publish(cell_pose_msg)
+                print 'Goal pose reached: %s' %(str(goal_pose))
             # send confirmation msg 
             confirmation_msg = confirmation()
             confirmation_msg.header = t
@@ -184,7 +184,24 @@ def Find_Goal(cell_pose, grid, action_name):
     if goal_pose[2] > 1.0*PI:
         goal_pose[2] -= 2.0*PI
     if goal_pose[2] < -1.0*PI:
-        goal_pose[2] += 2.0*PI        
+        goal_pose[2] += 2.0*PI
+    # confined by workspace size
+    edges = motion_mdp_edges.keys()
+    states = [e[0] for e in edges] + [e[1] for e in edges]
+    states_x = [s[0] for s in states]
+    states_y = [s[1] for s in states]
+    x_max = max(states_x)
+    x_min = min(states_x)
+    y_may = max(states_y)
+    y_min = min(states_y)
+    if x<= x_min:
+        goal_pose[0] = x_min
+    if x>= x_max:
+        goal_pose[0] = x_max
+    if y<= y_min:
+        goal_pose[1] = y_min
+    if y>= y_max:
+        goal_pose[1] = y_max        
     return goal_pose
 
 
@@ -197,7 +214,7 @@ def  Find_Control(raw_pose, goal_pose):
     linear_V = 0.0
     [s_x, s_y, s_theta] = raw_pose
     [g_x, g_y, g_theta] = goal_pose
-    face = atan(g_y-s_y, g_x-s_x)
+    face = atan2(g_y-s_y, g_x-s_x)
     theta_dif = s_theta-face
     orientation_dif = g_theta-s_theta
     if ((distance((s_x,s_y), (g_x,g_y)) > 0.1) and (abs(theta_dif) > 0.1*PI)):
