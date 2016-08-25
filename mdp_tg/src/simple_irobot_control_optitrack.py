@@ -66,7 +66,7 @@ def OptiTrackCallback(optidata):
     theta = atan2(sin(optidata.orientation.z+PI),cos(optidata.orientation.z+PI));
     Id = optidata.id
     position[Id] = [x, y, theta]
-    #print 'position data of %d received as %s' %(Id, str(position[Id]))
+    print 'position data of %d received as %s' %(Id, str(position[Id]))
 
 
 def SendControl(ContPublisher, control):
@@ -76,6 +76,8 @@ def SendControl(ContPublisher, control):
     ContPublisher.publish(ContMsg)
 
 def SimpleControl(pose, goal):
+    # to test
+    # rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'
     global LINEAR_VEL, ANGULAR_VEL, BOUND
     if reach_event(pose, goal, BOUND):
         angular_vel = 0

@@ -1,0 +1,26 @@
+clone
+https://github.com/MengGuo/hrl/tree/master/ros_vrpn_client
+
+bash install_vrpn.sh to install vrpn
+
+then catkin_make
+
+if errors about "Could NOT find Bullet "
+Try "rosdep install --from-paths ~/catkin_ws --ignore-src --rosdistro=indigo"
+
+then catkin_make
+
+cp optitrack folder into catkin_ws and then catkin_make
+----------------------------------------
+multi-machine ROS
+
+export ROS_MASTER_URI=http://hal:11311
+see, http://wiki.ros.org/ROS/Tutorials/MultipleMachines
+
+don't forget to export ROS_IP at ALL machines!
+see, http://answers.ros.org/question/163556/how-to-solve-couldnt-find-an-af_inet-address-for-problem/
+
+----------------------------------------
+test,
+manually, send twist messages to irobot
+e.g., rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'
