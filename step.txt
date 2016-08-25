@@ -24,3 +24,9 @@ see, http://answers.ros.org/question/163556/how-to-solve-couldnt-find-an-af_inet
 test,
 manually, send twist messages to irobot
 e.g., rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'
+
+
+----------------------------------------
+in irobot_2_1/driver.py
+
+

@@ -3,10 +3,13 @@ import roslib
 import Queue
 roslib.load_manifest('mdp_tg')
 import rospy
-from mdp_tg.msg import action, confirmation, cell_pose, raw_pose, UnicycleControl
+
 from math import sqrt, cos, sin, radians
 from math import pi as PI
 from numpy import floor
+
+import geometry_msgs.msg
+from mdp_tg.msg import action, confirmation, cell_pose, raw_pose
 
 import sys
 
@@ -35,7 +38,7 @@ def raw_pose_callback(data):
     print 'Robot position received: %s' %str(raw_pose)      
 
     
-def action_execution():
+def action_execution(robot_name='Brain2'):
     global next_action
     global raw_pose
     rospy.init_node('action_execution')
@@ -43,7 +46,7 @@ def action_execution():
     ###### publish to
     confirmation_pub = rospy.Publisher('action_done', confirmation, queue_size=100)
     cell_pose_pub = rospy.Publisher('robot_cell_pose', cell_pose, queue_size=100)
-    control_pub = rospy.Publisher('cmd_vel', UnicycleControl, queue_size=100)
+    control_pub = rospy.Publisher('%s/cmd_vel' %robot_name, geometry_msgs.msg.Twist, queue_size=100)
     ###### subscribe to
     rospy.Subscriber('next_action', action, next_action_callback)
     rospy.Subscriber('robot_raw_pose', raw_pose, raw_pose_callback)
@@ -61,9 +64,9 @@ def action_execution():
             while ((distance(raw_pose[0:2], goal_pose[0:2]) > 0.01) or (abs(raw_pose[2]-goal_pose[2]) > 0.1*PI)):
                 # send control msg
                 linearVelo, angularVelo = Find_Control(raw_pose, goal_pose)
-                control_msg = UnicycleControl()
-                control_msg.linearV = linearVelo
-                control_msg.angularV = angularVelo
+                control_msg = geometry_msgs.msg.Twist()
+                control_msg.linear.x = linearVelo
+                control_msg.angular.z = angularVelo
                 control_pub.publish(control_msg)
                 print 'Control cmds published: %s' %str((linearVelo, angularVelo))
                 rospy.sleep(0.5) # TODO: check how fast the input can change
@@ -218,6 +221,6 @@ def Raw_To_Cell_Pose(raw_pose, grid):
 if __name__ == '__main__':
     ###############
     try:
-        action_execution()
+        action_execution(robot_name='Brain2')
     except rospy.ROSInterruptException:
         pass

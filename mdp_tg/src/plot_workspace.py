@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import roslib
-import numpy
+from numpy import random
 import Queue
 roslib.load_manifest('mdp_tg')
 import rospy
@@ -11,36 +11,39 @@ import sys
 
 import matplotlib.patches
 from matplotlib import pyplot
+from matplotlib.patches import Polygon
 
 # import workspace and robot model
-from model import motion_mdp_edges, WS_d, WS_node_dict
+from load_model import motion_mdp_edges, WS_d, WS_node_dict
+
+
 
 
 def raw_pose_callback(data):
-    global raw_pose
+    global raw_pose_data
     x = data.x      #m
     y = data.y      #m
     theta = data.theta  #rad
-    raw_pose = [x, y, theta]
-    print 'Robot raw pose received: %s' %str(raw_pose)
+    raw_pose_data = [x, y, theta]
+    print 'Robot raw pose received: %s' %str(raw_pose_data)
 
     
 def cell_pose_callback(data):
-    global cell_pose
+    global cell_pose_data
     cell_x = data.x      #m
     cell_y = data.y      #m
     orientation = data.theta  #'N','S','E','W'
-    cell_pose = [cell_x, cell_y, orientation]
-    print 'Robot cell pose received: %s' %str(cell_pose)    
+    cell_pose_data = [cell_x, cell_y, orientation]
+    print 'Robot cell pose received: %s' %str(cell_pose_data)    
 
     
 def status_callback(data):
-    global status
+    global status_data
     l = data.label
     u = data.action
     m = data.segment
-    status = [l, u, m]
-    print 'Robot status received: %s' %str(status)
+    status_data = [l, u, m]
+    print 'Robot status received: %s' %str(status_data)
 
 
 def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status):
@@ -48,19 +51,28 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     fig = figure
     ax = fig.add_subplot(111)
     [l, u, m] = status
-    #----- draw the workspace
+    #----- draw the robot
     xl = raw_pose[0]
     yl = raw_pose[1]
+    dl = cell_pose[2]
     if m == 0:
         Ecolor = 'green'
-    if m == 1:
+    elif m == 1:
         Ecolor = 'magenta'
-    if m == 2:
+    elif m == 2:
         Ecolor = 'black'
-    if m > 2:
-        Ecolor = 'magenta'        
-    disk = matplotlib.patches.Circle((xl, yl), radius=WS_d, facecolor=Ecolor, fill = True, edgecolor=Ecolor, zorder=2))
-    ax.add_patch(disk)
+    elif m > 2:
+        Ecolor = 'magenta'
+    if dl == 'N':
+        car=[(xl-0.2,yl-0.2), (xl-0.2,yl+0.2), (xl, yl+0.4), (xl+0.2, yl+0.2), (xl+0.2,yl-0.2)]
+    elif dl == 'E':
+        car=[(xl-0.2,yl+0.2), (xl+0.2,yl+0.2), (xl+0.4, yl), (xl+0.2, yl-0.2), (xl-0.2,yl-0.2)]
+    elif dl == 'S':
+        car=[(xl+0.2,yl+0.2), (xl+0.2,yl-0.2), (xl, yl-0.4), (xl-0.2, yl-0.2), (xl-0.2,yl+0.2)]
+    elif dl == 'W':
+        car=[(xl+0.2,yl-0.2), (xl-0.2,yl-0.2), (xl-0.4, yl), (xl-0.2, yl+0.2), (xl+0.2,yl+0.2)]
+    polygon = Polygon(car, fill = True, facecolor='black', edgecolor='black', lw=5, zorder = 1)
+    ax.add_patch(polygon)
     #
     actstr = r''
     for s in u:
@@ -87,11 +99,11 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
             car=[(xl+0.2,yl+0.2), (xl+0.2,yl-0.2), (xl, yl-0.4), (xl-0.2, yl-0.2), (xl-0.2,yl+0.2)]
         elif dl == 'W':
             car=[(xl+0.2,yl-0.2), (xl-0.2,yl-0.2), (xl-0.4, yl), (xl-0.2, yl+0.2), (xl+0.2,yl+0.2)]
-        polygon = Polygon(car, fill = True, facecolor='grey', edgecolor='grey', lw=5, zorder = 1)
+        polygon = Polygon(car, fill = True, facecolor='grey', edgecolor='grey', lw=5, zorder = 1, alpha=0.5)
         ax.add_patch(polygon)
         prob = new_x[1]
         ax.text(xl, yl, r'$%s$' %str(prob), fontsize = 10, fontweight = 'bold', color='red')                
-    #----------------
+    #---------------- draw the workspace
     for node, prop in WS_node_dict.iteritems():
         if node != (x[0], x[1]):
             S = []
@@ -109,19 +121,16 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         if node == (x[0], x[1]):
             current_s = set([l,])
         #------
-        if current_s == set(['base1',]):
+        if current_s == set(['base1','base']):
             text = '$base1$'
             color = 'yellow'
-        elif current_s == set(['base2',]):
+        elif current_s == set(['base2','base']):
             text = '$base2$'
             color = 'yellow'
-        elif current_s == set(['base3',]):
+        elif current_s == set(['base3', 'base']):
             text = '$base3$'
             color = 'yellow'
-        elif current_s == set(['obstacleL',]):
-            text = '$Obs$'
-            color = '#ff8000'
-        elif current_s == set(['obstacleH',]):
+        elif current_s == set(['obstacle','low']):
             text = '$Obs$'
             color = 'red'
         elif current_s == set(['supply',]):
@@ -130,26 +139,30 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         else:
             text = None
             color = 'white'
-        rec = matplotlib.patches.Rectangle((node[0]-WS_d, node[1]-WS_d), WS_d*2, WS_d*2, fill = True, facecolor = color, edgecolor = 'black', linewidth = 1, ls = '--', alpha =0.8)
+        rec = matplotlib.patches.Rectangle((node[0]-WS_d, node[1]-WS_d), WS_d*2, WS_d*2, fill = True, facecolor = color, edgecolor = 'black', linewidth = 1,  alpha =0.8)
         ax.add_patch(rec)
         if text:
-            ax.text(node[0]-0.7, node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')        
+            ax.text(node[0]-0.2, node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')        
     ax.set_aspect('equal')
-    ax.set_xlim(0, 10)
-    ax.set_ylim(0, 10)
+    ax.set_xlim(0, 2.7)
+    ax.set_ylim(0, 1.7)
     ax.set_xlabel(r'$x(m)$')
     ax.set_ylabel(r'$y(m)$')
-    fig.subplots_adjust(0.003,0.062,0.97,0.94)
+    #fig.subplots_adjust(0.003,0.062,0.97,0.94)
     pyplot.pause(0.5)
     return fig
     
     
 def plot_workspace():
-    global raw_pose
-    global status
-    global cell_pose
+    global raw_pose_data
+    global status_data
+    global cell_pose_data
     rospy.init_node('plot_workspace')
     print 'Plot workspace node started!'
+    ##### initilzation
+    raw_pose_data = [0.0, 0.0, 0.0]
+    cell_pose_data = [0.25, 0.25, 'E']
+    status_data = ['None', 'None', 0]    
     ###### subscribe to
     rospy.Subscriber('robot_raw_pose', raw_pose, raw_pose_callback)
     rospy.Subscriber('robot_status', status, status_callback)
@@ -161,7 +174,7 @@ def plot_workspace():
     rospy.sleep(2)
     while not rospy.is_shutdown():
         try:
-           figure = visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status):
+           figure = visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose_data, cell_pose_data, status_data)
         except rospy.ROSInterruptException:
             print 'Visualization workspace stopped'
 

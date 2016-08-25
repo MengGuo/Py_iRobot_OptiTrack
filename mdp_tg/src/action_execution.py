@@ -6,7 +6,7 @@ import rospy
 
 from math import sqrt, cos, sin, radians
 from math import pi as PI
-from numpy import floor
+from numpy import floor, random
 
 import geometry_msgs.msg
 from mdp_tg.msg import action, confirmation, cell_pose, raw_pose

@@ -150,8 +150,8 @@ class Create:
 		sleep(1)
 		self.send(139,10,0,255)
 
-		monitor = Monitor(self.runRef, self.packetRef, self, self.__read, self.__sendAll, self.__addDistance, self.__addAngle, self.update)
-		monitor.start()
+		#monitor = Monitor(self.runRef, self.packetRef, self, self.__read, self.__sendAll, self.__addDistance, self.__addAngle, self.update)
+		#monitor.start()
 		sleep(1.5)
 
 	def stop(self):

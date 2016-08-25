@@ -27,7 +27,8 @@ class CreateDriver:
 		self.x = 0
 		self.y = 0
 		self.th = 0
-		self.create.update = self.sense
+		#self.create.update = self.sense
+		self.create.update = None
 
 	def start(self):
 		self.create.start()

@@ -37,7 +37,7 @@ def visualize_agents(figure, position):
             ax.plot(p[0], p[1], 'ro', markersize=8)
             disk = matplotlib.patches.Circle(
                 (p[0], p[1]),
-                radius = 0.2*0.5,
+                radius = 0.5*0.5,
                 facecolor='#afeeee',
                 #fill = False,
                 alpha=0.6)
@@ -51,9 +51,9 @@ def visualize_agents(figure, position):
     ax.set_xlabel('x(m)')
     ax.set_ylabel('y(m)')
     ax.set_aspect('equal')
-    ax.set_xlim(-1.5, 1.5)
-    ax.set_ylim(-1.5, 1.5)
-    fig.subplots_adjust(0.003,0.062,0.97,0.94)
+    ax.set_xlim(-0.5, 2.7)
+    ax.set_ylim(-0.5, 1.7)
+    #fig.subplots_adjust(0.003,0.062,0.97,0.94)
     #pyplot.show()
     pyplot.pause(0.01)
     return fig
@@ -66,7 +66,7 @@ def OptiTrackCallback(optidata):
     theta = atan2(sin(optidata.orientation.z+PI),cos(optidata.orientation.z+PI));
     Id = optidata.id
     position[Id] = [x, y, theta]
-    print 'position data of %d received as %s' %(Id, str(position[Id]))
+    #print 'position data of %d received as %s' %(Id, str(position[Id]))
 
 
 def SendControl(ContPublisher, control):
@@ -109,7 +109,7 @@ RO_ID = [1,]
 RO_NAME = ['Brain2',]
 NO_RS = len(RO_ID)
 ## agent goals ordered by RO_ID
-GOAL = [(-1, 0, PI*0.5),]
+GOAL = [(1.0, 1.0, PI*0.5),]
 # limit v \in [-0.3148,0.3148] and w \in [-2.2763,2.2763]
 LINEAR_VEL = 0.15
 ANGULAR_VEL = 0.3
