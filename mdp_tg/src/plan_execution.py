@@ -12,30 +12,32 @@ import random
 import sys
 
 
-from model import best_plan, prod_dra_edges, initial_state
+from load_model import best_plan, prod_dra_edges, initial_state
+
+import pickle
 
 
 def confirm_callback(data):
-    global confirm    
+    global confirm_data    
     header = data.header
     name = data.name
     done = data.done
-    confirm = [header, name, done]
-    print 'Confirmation received: %s' %str(confirm)
+    confirm_data = [header, name, done]
+    print 'Confirmation received: %s' %str(confirm_data)
 
     
 def cell_pose_callback(data):
-    global cell_pose
+    global cell_pose_data
     x = data.x
     y = data.y
     orientation = data.orientation
-    cell_pose = [x, y, orientation]
-    print 'Robot position received: %s' %str(cell_pose)      
+    cell_pose_data = [x, y, orientation]
+    print 'Robot position received: %s' %str(cell_pose_data)      
 
     
 def plan_execution():
-    global confirm
-    global cell_pose
+    global confirm_data
+    global cell_pose_data
     rospy.init_node('plan_execution')
     print 'Plan execution node started!'
     ###### publish to
@@ -45,7 +47,14 @@ def plan_execution():
     rospy.Subscriber('action_done', confirmation, confirm_callback)
     rospy.Subscriber('robot_cell_pose', cell_pose, cell_pose_callback)
     ##### plan execution
-    current_state = initial_state[:]
+    cell_pose_data = None
+    confirm_data = [-1, 'None', 0]
+    rospy.sleep(0.5)
+    if not cell_pose_data:
+        cell_pose_data = set(initial_state).pop()[0]
+    elif cell_pose_data != set(initial_state).pop()[0]:
+        print 'Make sure the robot starts from the initial state'
+    current_state = set(initial_state).pop()
     t = 0
     X = []
     U = []
@@ -55,36 +64,52 @@ def plan_execution():
             #
             next_action_msg = action()
             next_action_name, next_segment = Find_Action(best_plan,current_state)
+            next_actstr = r''
+            for s in next_action_name:
+                next_actstr += s
             next_action_msg.header = t
-            next_action_msg.name = next_action_name
-            print 'Next action: %s' %next_action_name
+            next_action_msg.name = next_actstr
+            print 'Next action: %s' %next_actstr
             U.append(next_action_name)
             #
             status_msg = status()
             labelset = set(current_state[1])
-            status_msg.label = labelset.pop()
-            status_msg.action = next_action_name
+            if labelset:
+                status_msg.label = labelset.pop()
+            else:
+                status_msg.label = 'free'
+            status_msg.action = next_actstr
             status_msg.segment = next_segment
-            while not ((confirm[0] == t) and (confirm[1]==next_action_name) and (confirm[2]>0)):
-                action_pub.publish(next_action_msg)
-                status_pub.publish(status_msg)
-                rospy.sleep(0.05)
-            #
+            while not rospy.is_shutdown():
+                if not ((confirm_data[0] == t) and (confirm_data[1]==next_action_name) and (confirm_data[2]>0)):
+                    try:
+                        action_pub.publish(next_action_msg)
+                        status_pub.publish(status_msg)
+                        rospy.sleep(0.5)
+                    except rospy.ROSInterruptException:
+                        pass
+            #    
             rospy.sleep(1)
             t += 1
-            print 'Action %s done!' %next_action_name
-            print 'Robot cell pose: %s' %str(cell_pose)
-            next_state = Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose)
+            print 'System trajectory:', X
+            print 'Control actions:', U
+            pickle.dump((X,U), open("results_X_U.p","wb"))                
+            print 'Action %s done!' %next_actstr
+            print 'Robot cell pose: %s' %str(cell_pose_data)
+            next_state = current_state[:]
+            next_state = Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose_data)
             current_state = next_state[:]
         except rospy.ROSInterruptException:
             print 'System trajectory:', X
             print 'Control actions:', U
+            pickle.dump((X,U), open("results_X_U.p","wb"))
 
 
-def Find_Action(best_plan, current_state):
+def Find_Action(best_plan, prod_state):
     # choose action according to the optimal policy
     # best_plan = [plan_prefix, prefix_cost, prefix_risk, y_in_sf], [plan_suffix, suffix_cost, suffix_risk], [MEC[0], MEC[1], Sr, Sd], plan_bad]
     print '------Choose action according to the optimal policy------'
+    print 'current_state', prod_state
     plan_prefix = best_plan[0][0]
     plan_suffix = best_plan[1][0]
     plan_bad = best_plan[3]
@@ -102,7 +127,8 @@ def Find_Action(best_plan, current_state):
         print 'In bad states'        
         U = plan_bad[prod_state][0]
         P = plan_bad[prod_state][1]
-        next_segment = 2        
+        next_segment = 2
+    print 'U:%s, P:%s' %(str(U), str(P))
     rdn = random.random()
     pc = 0
     for k, p in enumerate(P):
@@ -120,8 +146,8 @@ def Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose):
     for (f_state, t_state) in prod_dra_edges.iterkeys():
         if f_state == current_state:
             prop = prod_dra_edges[(f_state, t_state)]
-            if ((next_action_name in prop.keys()) and (next_state[0] == cell_pose)):
-                S.append(next_state)
+            if ((next_action_name in prop.keys()) and (t_state[0] == cell_pose)):
+                S.append(t_state)
                 P.append(prop[next_action_name][0])
     rdn = random.random()
     pc = 0

@@ -10,6 +10,7 @@ from math import sqrt, cos, sin, radians
 import sys
 
 import matplotlib.patches
+import matplotlib
 from matplotlib import pyplot
 from matplotlib.patches import Polygon
 
@@ -25,16 +26,16 @@ def raw_pose_callback(data):
     y = data.y      #m
     theta = data.theta  #rad
     raw_pose_data = [x, y, theta]
-    print 'Robot raw pose received: %s' %str(raw_pose_data)
+    # print 'Robot raw pose received: %s' %str(raw_pose_data)
 
     
 def cell_pose_callback(data):
     global cell_pose_data
     cell_x = data.x      #m
     cell_y = data.y      #m
-    orientation = data.theta  #'N','S','E','W'
+    orientation = data.orientation  #'N','S','E','W'
     cell_pose_data = [cell_x, cell_y, orientation]
-    print 'Robot cell pose received: %s' %str(cell_pose_data)    
+    # print 'Robot cell pose received: %s' %str(cell_pose_data)    
 
     
 def status_callback(data):
@@ -51,9 +52,10 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     fig = figure
     ax = fig.add_subplot(111)
     [l, u, m] = status
-    #----- draw the robot
-    xl = raw_pose[0]
-    yl = raw_pose[1]
+    #----- draw the robot cell_pose
+    print 'robot cell pose', cell_pose
+    xl = cell_pose[0]
+    yl = cell_pose[1]
     dl = cell_pose[2]
     if m == 0:
         Ecolor = 'green'
@@ -64,20 +66,41 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     elif m > 2:
         Ecolor = 'magenta'
     if dl == 'N':
-        car=[(xl-0.2,yl-0.2), (xl-0.2,yl+0.2), (xl, yl+0.4), (xl+0.2, yl+0.2), (xl+0.2,yl-0.2)]
+        car=[(xl-0.1,yl-0.1), (xl-0.1,yl+0.1), (xl, yl+0.2), (xl+0.1, yl+0.1), (xl+0.1,yl-0.1)]
     elif dl == 'E':
-        car=[(xl-0.2,yl+0.2), (xl+0.2,yl+0.2), (xl+0.4, yl), (xl+0.2, yl-0.2), (xl-0.2,yl-0.2)]
+        car=[(xl-0.1,yl+0.1), (xl+0.1,yl+0.1), (xl+0.2, yl), (xl+0.1, yl-0.1), (xl-0.1,yl-0.1)]
     elif dl == 'S':
-        car=[(xl+0.2,yl+0.2), (xl+0.2,yl-0.2), (xl, yl-0.4), (xl-0.2, yl-0.2), (xl-0.2,yl+0.2)]
+        car=[(xl+0.1,yl+0.1), (xl+0.1,yl-0.1), (xl, yl-0.2), (xl-0.1, yl-0.1), (xl-0.1,yl+0.1)]
     elif dl == 'W':
-        car=[(xl+0.2,yl-0.2), (xl-0.2,yl-0.2), (xl-0.4, yl), (xl-0.2, yl+0.2), (xl+0.2,yl+0.2)]
+        car=[(xl+0.1,yl-0.1), (xl-0.1,yl-0.1), (xl-0.2, yl), (xl-0.1, yl+0.1), (xl+0.1,yl+0.1)]
     polygon = Polygon(car, fill = True, facecolor='black', edgecolor='black', lw=5, zorder = 1)
     ax.add_patch(polygon)
+    #----- draw the robot raw_pose
+    print 'robot raw pose', raw_pose
+    xl = raw_pose[0]
+    yl = raw_pose[1]
+    dl = raw_pose[2]
+    if m == 0:
+        Ecolor = 'green'
+    elif m == 1:
+        Ecolor = 'magenta'
+    elif m == 2:
+        Ecolor = 'black'
+    elif m > 2:
+        Ecolor = 'magenta'
+    car=[(xl-0.1,yl-0.1), (xl-0.1,yl+0.1), (xl, yl+0.2), (xl+0.1, yl+0.1), (xl+0.1,yl-0.1)]
+    polygon2 = Polygon(car, fill = True, facecolor='black', edgecolor='black', lw=5, zorder = 2)
+    ts = ax.transData
+    coords = ts.transform([xl, yl])
+    tr = matplotlib.transforms.Affine2D().rotate_deg_around(coords[0], coords[1], dl*180/3.14 -90)
+    t= ts + tr
+    polygon2.set_transform(t)
+    ax.add_patch(polygon2)    
     #
     actstr = r''
     for s in u:
         actstr += s
-    ax.text(xl, yl+0.5, r'$%s$' %str(actstr), fontsize = 13, fontweight = 'bold', color='red')
+    ax.text(xl, yl+0.1, r'$%s$' %str(actstr), fontsize = 13, fontweight = 'bold', color='red')
     # plot shadow
     x = cell_pose[:]
     t_x_list = []
@@ -92,13 +115,13 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         yl = new_x[0][1]
         dl = new_x[0][2]
         if dl == 'N':
-            car=[(xl-0.2,yl-0.2), (xl-0.2,yl+0.2), (xl, yl+0.4), (xl+0.2, yl+0.2), (xl+0.2,yl-0.2)]
+            car=[(xl-0.1,yl-0.1), (xl-0.1,yl+0.1), (xl, yl+0.2), (xl+0.1, yl+0.1), (xl+0.1,yl-0.1)]
         elif dl == 'E':
-            car=[(xl-0.2,yl+0.2), (xl+0.2,yl+0.2), (xl+0.4, yl), (xl+0.2, yl-0.2), (xl-0.2,yl-0.2)]
+            car=[(xl-0.1,yl+0.1), (xl+0.1,yl+0.1), (xl+0.2, yl), (xl+0.1, yl-0.1), (xl-0.1,yl-0.1)]
         elif dl == 'S':
-            car=[(xl+0.2,yl+0.2), (xl+0.2,yl-0.2), (xl, yl-0.4), (xl-0.2, yl-0.2), (xl-0.2,yl+0.2)]
+            car=[(xl+0.1,yl+0.1), (xl+0.1,yl-0.1), (xl, yl-0.2), (xl-0.1, yl-0.1), (xl-0.1,yl+0.1)]
         elif dl == 'W':
-            car=[(xl+0.2,yl-0.2), (xl-0.2,yl-0.2), (xl-0.4, yl), (xl-0.2, yl+0.2), (xl+0.2,yl+0.2)]
+            car=[(xl+0.1,yl-0.1), (xl-0.1,yl-0.1), (xl-0.2, yl), (xl-0.1, yl+0.1), (xl+0.1,yl+0.1)]
         polygon = Polygon(car, fill = True, facecolor='grey', edgecolor='grey', lw=5, zorder = 1, alpha=0.5)
         ax.add_patch(polygon)
         prob = new_x[1]
@@ -142,9 +165,9 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         rec = matplotlib.patches.Rectangle((node[0]-WS_d, node[1]-WS_d), WS_d*2, WS_d*2, fill = True, facecolor = color, edgecolor = 'black', linewidth = 1,  alpha =0.8)
         ax.add_patch(rec)
         if text:
-            ax.text(node[0]-0.2, node[1], r'%s' %text, fontsize = 10, fontweight = 'bold')        
+            ax.text(node[0]-0.15, node[1], r'%s' %text, fontsize = 13, fontweight = 'bold')        
     ax.set_aspect('equal')
-    ax.set_xlim(0, 2.7)
+    ax.set_xlim(0, 2.6)
     ax.set_ylim(0, 1.7)
     ax.set_xlabel(r'$x(m)$')
     ax.set_ylabel(r'$y(m)$')
@@ -160,7 +183,7 @@ def plot_workspace():
     rospy.init_node('plot_workspace')
     print 'Plot workspace node started!'
     ##### initilzation
-    raw_pose_data = [0.0, 0.0, 0.0]
+    raw_pose_data = [0.25, 0.25, 0.0]
     cell_pose_data = [0.25, 0.25, 'E']
     status_data = ['None', 'None', 0]    
     ###### subscribe to

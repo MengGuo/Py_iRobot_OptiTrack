@@ -1,3 +1,3 @@
-int64 x
-int64 y
+float64 x
+float64 y
 string orientation

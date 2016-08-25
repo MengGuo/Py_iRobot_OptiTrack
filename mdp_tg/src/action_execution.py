@@ -14,33 +14,39 @@ from mdp_tg.msg import action, confirmation, cell_pose, raw_pose
 import sys
 
 # import workspace and robot model
-from model import WS_d, initial_state
+from load_model import WS_d, initial_state
 
 def distance(pose1, pose2):
     return sqrt((pose1[0]-pose2[0])**2+(pose1[1]-pose2[1])**2)
 
 
 def next_action_callback(data):
-    global next_action   
+    global next_action_data   
     header = data.header
     name = data.name
     done = data.done
-    next_action = [header, name]
-    print 'Next action received: %s' %str(next_action)
+    next_action_data = [header, name]
+    print 'Next action received: %s' %str(next_action_data)
 
     
 def raw_pose_callback(data):
-    global raw_pose
+    global grid
+    global raw_pose_data
+    global cell_pose_data
     x = data.x      #m
     y = data.y      #m
     theta = data.theta  #rad
-    raw_pose = [x, y, theta]
-    print 'Robot position received: %s' %str(raw_pose)      
+    raw_pose_data = [x, y, theta]
+    # print 'Robot position received: %s' %str(raw_pose_data)
+    cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
+
 
     
 def action_execution(robot_name='Brain2'):
-    global next_action
-    global raw_pose
+    global next_action_data
+    global raw_pose_data
+    global cell_pose_data
+    global grid
     rospy.init_node('action_execution')
     print 'Action execution node started!'
     ###### publish to
@@ -53,23 +59,46 @@ def action_execution(robot_name='Brain2'):
     ##### action execution
     t = 0
     grid = WS_d*2    # grid size
-    cell_pose = initial_state[0]
+    raw_pose_data = None
+    rospy.sleep(1.0)
+    if raw_pose_data:
+        cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
+    else:
+        cell_pose_data = set(initial_state).pop()[0]
+    cell_pose_msg = cell_pose()
+    cell_pose_msg.x = cell_pose_data[0]
+    cell_pose_msg.y = cell_pose_data[1]
+    cell_pose_msg.orientation = cell_pose_data[2]
+    count_t = 0
+    # print 'cell_pose_data', cell_pose_data
+    while count_t < 0.5: # publish for 1s
+        cell_pose_pub.publish(cell_pose_msg)
+        rospy.sleep(0.05)
+        count_t += 0.05
+    print 'Robot cell pose published: (%s, %s, %s)' %(str(cell_pose_data[0]), str(cell_pose_data[1]), str(cell_pose_data[2]))
+    next_action_data = [-1, 'None']
     #### 
     while not rospy.is_shutdown():
-        if next_action[0] == t:
-            print 'Next action %s received at time %s' %(next_action[1], next_action[0])
-            action_name = next_action[1]
-            start_pose = raw_pose[:]
-            goal_pose = Find_Goal(cell_pose, grid, action_name)
-            while ((distance(raw_pose[0:2], goal_pose[0:2]) > 0.01) or (abs(raw_pose[2]-goal_pose[2]) > 0.1*PI)):
+        if next_action_data[0] == t:
+            print 'Next action %s received at time %s' %(next_action_data[1], next_action_data[0])
+            action_name = next_action_data[1]
+            start_pose = raw_pose_data[:]
+            goal_pose = Find_Goal(cell_pose_data, grid, action_name)
+            while ((distance(raw_pose_data[0:2], goal_pose[0:2]) > 0.01) or (abs(raw_pose_data[2]-goal_pose[2]) > 0.1*PI)):
                 # send control msg
-                linearVelo, angularVelo = Find_Control(raw_pose, goal_pose)
+                print 'Navigation to goal'
+                linearVelo, angularVelo = Find_Control(raw_pose_data, goal_pose)
                 control_msg = geometry_msgs.msg.Twist()
                 control_msg.linear.x = linearVelo
                 control_msg.angular.z = angularVelo
                 control_pub.publish(control_msg)
                 print 'Control cmds published: %s' %str((linearVelo, angularVelo))
                 rospy.sleep(0.5) # TODO: check how fast the input can change
+                cell_pose_msg = cell_pose()
+                cell_pose_msg.x = cell_pose_data[0]
+                cell_pose_msg.y = cell_pose_data[1]
+                cell_pose_msg.orientation = cell_pose_data[2]
+                cell_pose_pub.publish(cell_pose_msg)
             print 'Goal pose reached: %s' %(str(goal_pose))
             # send confirmation msg 
             confirmation_msg = confirmation()
@@ -82,18 +111,6 @@ def action_execution(robot_name='Brain2'):
                 rospy.sleep(0.05)
                 count_t += 0.05
             print 'Confirmation for action %s at time %s sent' %(str(action_name), str(t))
-            # send cell_pose msg
-            cell_pose_msg = cell_pose()
-            [cell_x, cell_y, orientation] = Raw_To_Cell_Pose(raw_pose, grid)
-            cell_pose_msg.x = cell_x
-            cell_pose_msg.y = cell_y
-            cell_pose_msg.orientation = orientation
-            count_t = 0 
-            while count_t < 1: # publish for 1s
-                cell_pose_pub.publish(cell_pose_msg)
-                rospy.sleep(0.05)
-                count_t += 0.05
-            print 'Robot cell pose published: (%s, %s, %s)' %(str(cell_x), str(cell_y), str(orientation)) 
             t += 1
         else:
             rospy.sleep(0.05)
@@ -192,7 +209,7 @@ def  Find_Control(raw_pose, goal_pose):
     elif ((distance((s_x,s_y), (g_x,g_y)) > 0.1) and (abs(theta_dif) < 0.1*PI)):
         print 'Forward to the goal'
         linear_V = LINEAR_V
-    elif ((distance((s_x,s_y), (g_x,g_y)) < 0.1) and (abs(orientation_dif) > 0.1*PI))::
+    elif ((distance((s_x,s_y), (g_x,g_y)) < 0.1) and (abs(orientation_dif) > 0.1*PI)):
         print 'Turn to right orientation'
         if ((0 < orientation_dif < 1.0*PI) or (-2.0*PI < orientation_dif < -1.0*PI)):
             angular_V = -ANGULAR_V 
