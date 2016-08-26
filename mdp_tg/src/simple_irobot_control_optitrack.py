@@ -10,7 +10,10 @@ from matplotlib import pyplot
 
 import geometry_msgs.msg
 from optitrack_driver.msg import OptiTrackData
-import time 
+import time
+
+import matplotlib
+from matplotlib.patches import Polygon
 
 def norm(pose1, pose2):
     return sqrt((pose1[0]-pose2[0])**2+(pose1[1]-pose2[1])**2)
@@ -34,14 +37,18 @@ def visualize_agents(figure, position):
     ax = fig.add_subplot(111)
     for a,p in position.iteritems():
         if p:
-            ax.plot(p[0], p[1], 'ro', markersize=8)
-            disk = matplotlib.patches.Circle(
-                (p[0], p[1]),
-                radius = 0.5*0.5,
-                facecolor='#afeeee',
-                #fill = False,
-                alpha=0.6)
-            ax.add_patch(disk)
+            xl = p[0]
+            yl = p[1]
+            dl = p[2]
+            ax.plot(xl, yl, 'ro', markersize=8)
+            car=[(xl-0.1,yl-0.1), (xl-0.1,yl+0.1), (xl, yl+0.2), (xl+0.1, yl+0.1), (xl+0.1,yl-0.1)]
+            polygon2 = Polygon(car, fill = True, facecolor='black', edgecolor='black', lw=5, zorder = 2)
+            ts = ax.transData
+            coords = ts.transform([xl, yl])
+            tr = matplotlib.transforms.Affine2D().rotate_deg_around(coords[0], coords[1], dl*180/3.14 -90)
+            t= ts + tr
+            polygon2.set_transform(t)
+            ax.add_patch(polygon2)    
             for b,l in position.iteritems():
                 if ((a != b) and (l)):
                     if neighbor(p, l, 1.0):
