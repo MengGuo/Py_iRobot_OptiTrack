@@ -25,19 +25,18 @@ def next_action_callback(data):
     header = data.header
     name = data.name
     next_action_data = [header, name]
-    print 'Next action received: %s' %str(next_action_data)
+    # print 'Next action received: %s' %str(next_action_data)
 
     
 def raw_pose_callback(data):
     global grid
     global raw_pose_data
-    global cell_pose_data
     x = data.x      #m
     y = data.y      #m
     theta = data.theta  #rad
     raw_pose_data = [x, y, theta]
     # print 'Robot position received: %s' %str(raw_pose_data)
-    cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
+    # cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
 
 
     
@@ -46,8 +45,18 @@ def action_execution(robot_name='Brain2'):
     global raw_pose_data
     global cell_pose_data
     global grid
+    global x_min, x_max, y_min, y_max
     rospy.init_node('action_execution')
     print 'Action execution node started!'
+    ######
+    edges = motion_mdp_edges.keys()
+    states = [e[0] for e in edges] + [e[1] for e in edges]
+    states_x = [s[0] for s in states]
+    states_y = [s[1] for s in states]
+    x_max = max(states_x)
+    x_min = min(states_x)
+    y_max = max(states_y)
+    y_min = min(states_y)
     ###### publish to
     confirmation_pub = rospy.Publisher('action_done', confirmation, queue_size=100)
     cell_pose_pub = rospy.Publisher('robot_cell_pose', cell_pose, queue_size=100)
@@ -78,28 +87,35 @@ def action_execution(robot_name='Brain2'):
     next_action_data = [-1, 'None']
     #### 
     while not rospy.is_shutdown():
+        reached = False
+        cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
+        cell_pose_msg = cell_pose()
+        cell_pose_msg.x = cell_pose_data[0]
+        cell_pose_msg.y = cell_pose_data[1]
+        cell_pose_msg.orientation = cell_pose_data[2]
+        cell_pose_pub.publish(cell_pose_msg)
         if next_action_data[0] == t:
             print 'Next action %s received at time %s' %(next_action_data[1], next_action_data[0])
             action_name = next_action_data[1]
             start_pose = raw_pose_data[:]
             goal_pose = Find_Goal(cell_pose_data, grid, action_name)
+            print 'Goal pose: %s' %str(goal_pose)
             while not rospy.is_shutdown():
-                if ((distance(raw_pose_data[0:2], goal_pose[0:2]) > 0.1) or (abs(raw_pose_data[2]-goal_pose[2]) > 0.1*PI)):
+                if not reached:
                     # send control msg
                     # print 'Navigation to goal'
-                    linearVelo, angularVelo = Find_Control(raw_pose_data, goal_pose)
+                    linearVelo, angularVelo, reached = Find_Control(raw_pose_data, goal_pose)
                     control_msg = geometry_msgs.msg.Twist()
                     control_msg.linear.x = linearVelo
                     control_msg.angular.z = angularVelo
                     control_pub.publish(control_msg)
-                    print 'Control cmds published: %s' %str((linearVelo, angularVelo))
+                    if random.random()>0.8:
+                        print 'Goal pose: %s' %str(goal_pose)
+                        print 'Control cmds published: %s' %str((linearVelo, angularVelo))
                     rospy.sleep(0.5) # TODO: check how fast the input can change
-                    cell_pose_msg = cell_pose()
-                    cell_pose_msg.x = cell_pose_data[0]
-                    cell_pose_msg.y = cell_pose_data[1]
-                    cell_pose_msg.orientation = cell_pose_data[2]
-                    cell_pose_pub.publish(cell_pose_msg)
-                print 'Goal pose reached: %s' %(str(goal_pose))
+                else:
+                    break
+            print '===========Goal pose reached: %s==========' %(str(goal_pose))
             # send confirmation msg 
             confirmation_msg = confirmation()
             confirmation_msg.header = t
@@ -118,6 +134,7 @@ def action_execution(robot_name='Brain2'):
 
 
 def Find_Goal(cell_pose, grid, action_name):
+    global x_min, x_max, y_min, y_max
     # decide goal state and control input
     [x, y, orientation] = cell_pose
     P =[]
@@ -186,21 +203,13 @@ def Find_Goal(cell_pose, grid, action_name):
     if goal_pose[2] < -1.0*PI:
         goal_pose[2] += 2.0*PI
     # confined by workspace size
-    edges = motion_mdp_edges.keys()
-    states = [e[0] for e in edges] + [e[1] for e in edges]
-    states_x = [s[0] for s in states]
-    states_y = [s[1] for s in states]
-    x_max = max(states_x)
-    x_min = min(states_x)
-    y_may = max(states_y)
-    y_min = min(states_y)
-    if x<= x_min:
+    if goal_pose[0] <= x_min:
         goal_pose[0] = x_min
-    if x>= x_max:
+    if goal_pose[0] >= x_max:
         goal_pose[0] = x_max
-    if y<= y_min:
+    if goal_pose[1] <= y_min:
         goal_pose[1] = y_min
-    if y>= y_max:
+    if goal_pose[1] >= y_max:
         goal_pose[1] = y_max        
     return goal_pose
 
@@ -212,34 +221,52 @@ def  Find_Control(raw_pose, goal_pose):
     ANGULAR_V = 0.2   #rad/s
     angular_V = 0.0
     linear_V = 0.0
+    d_bound = 0.3
+    theta_bound = 0.15*PI
+    reached = False
     [s_x, s_y, s_theta] = raw_pose
     [g_x, g_y, g_theta] = goal_pose
     face = atan2(g_y-s_y, g_x-s_x)
     theta_dif = s_theta-face
-    orientation_dif = g_theta-s_theta
-    if ((distance((s_x,s_y), (g_x,g_y)) > 0.1) and (abs(theta_dif) > 0.1*PI)):
-        print 'Turn to face the goal'
+    orientation_dif = s_theta-g_theta
+    if ((distance((s_x,s_y), (g_x,g_y)) > d_bound) and (abs(theta_dif) > theta_bound)):
+        if random.random()>0.8:
+            print 'Turn to face the goal, distance error: %s, face error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(-theta_dif))
         if ((0 < theta_dif < 1.0*PI) or (-2.0*PI < theta_dif < -1.0*PI)):
             angular_V = -ANGULAR_V 
         else:
             angular_V = ANGULAR_V 
-    elif ((distance((s_x,s_y), (g_x,g_y)) > 0.1) and (abs(theta_dif) < 0.1*PI)):
-        print 'Forward to the goal'
+    elif ((distance((s_x,s_y), (g_x,g_y)) > d_bound) and (abs(theta_dif) < theta_bound)):
+        if random.random()>0.8:        
+            print 'Forward to the goal, distance error: %s, face error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(theta_dif))
         linear_V = LINEAR_V
-    elif ((distance((s_x,s_y), (g_x,g_y)) < 0.1) and (abs(orientation_dif) > 0.1*PI)):
-        print 'Turn to right orientation'
+    elif ((distance((s_x,s_y), (g_x,g_y)) < d_bound) and (abs(orientation_dif) > theta_bound)):
+        if random.random()>0.8:        
+            print 'Turn to right orientation, distance error: %s, orientation error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(-orientation_dif))
         if ((0 < orientation_dif < 1.0*PI) or (-2.0*PI < orientation_dif < -1.0*PI)):
             angular_V = -ANGULAR_V 
         else:
-            angular_V = ANGULAR_V 
-    return linear_V, angular_V
+            angular_V = ANGULAR_V
+    else:
+        print 'Goal reached!'
+        reached = True
+    return linear_V, angular_V, reached
 
 
 
 def Raw_To_Cell_Pose(raw_pose, grid):
+    global x_min, x_max, y_min, y_max
     [raw_x, raw_y, raw_theta] = raw_pose
     cell_x = floor(raw_x/grid)*grid + grid*0.5
     cell_y = floor(raw_y/grid)*grid + grid*0.5
+    if cell_x<= x_min:
+        cell_x = x_min
+    if cell_x>= x_max:
+        cell_x = x_max
+    if cell_y<= y_min:
+        cell_y = y_min
+    if cell_y>= y_max:
+        cell_y = y_max            
     if -0.25*PI <= raw_theta <= 0.25*PI:
         orientation = 'E'
     elif 0.25*PI <= raw_theta <= 0.75*PI:
@@ -247,7 +274,7 @@ def Raw_To_Cell_Pose(raw_pose, grid):
     elif (0.75*PI <= raw_theta <= 1.0*PI) or (-1.0*PI <= raw_theta <= -0.75*PI):
         orientation = 'W'    
     elif -0.75*PI <= raw_theta <= -0.25*PI:
-        orientation = 'S'    
+        orientation = 'S'        
     return cell_x, cell_y, orientation
 
 

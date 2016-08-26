@@ -32,7 +32,7 @@ def cell_pose_callback(data):
     y = data.y
     orientation = data.orientation
     cell_pose_data = [x, y, orientation]
-    print 'Robot position received: %s' %str(cell_pose_data)      
+    # print 'Robot position received: %s' %str(cell_pose_data)      
 
     
 def plan_execution():
@@ -81,13 +81,15 @@ def plan_execution():
             status_msg.action = next_actstr
             status_msg.segment = next_segment
             while not rospy.is_shutdown():
-                if not ((confirm_data[0] == t) and (confirm_data[1]==next_action_name) and (confirm_data[2]>0)):
+                if not ((confirm_data[0] == t) and (confirm_data[1]==next_actstr) and (confirm_data[2]>0)):
                     try:
                         action_pub.publish(next_action_msg)
                         status_pub.publish(status_msg)
                         rospy.sleep(0.5)
                     except rospy.ROSInterruptException:
                         pass
+                else:
+                    break
             #    
             rospy.sleep(1)
             t += 1
@@ -143,6 +145,7 @@ def Find_Action(best_plan, prod_state):
 def Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose):
     S = []
     P = []
+    k = -1
     for (f_state, t_state) in prod_dra_edges.iterkeys():
         if f_state == current_state:
             prop = prod_dra_edges[(f_state, t_state)]
@@ -155,7 +158,10 @@ def Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose):
         pc += p
         if pc > rdn:
             break
-    next_state = tuple(S[k])
+    if k >= 0:
+        next_state = tuple(S[k])
+    else:
+        next_state = current_state
     return next_state
 
     
