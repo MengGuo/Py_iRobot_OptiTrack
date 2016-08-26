@@ -23,7 +23,8 @@ def confirm_callback(data):
     name = data.name
     done = data.done
     confirm_data = [header, name, done]
-    print 'Confirmation received: %s' %str(confirm_data)
+    if random.random() > 0.8:
+        print 'Confirmation received: %s' %str(confirm_data)
 
     
 def cell_pose_callback(data):
@@ -60,7 +61,9 @@ def plan_execution():
     U = []
     while not rospy.is_shutdown():
         try:
-            X.append(current_state)
+            print '-------------'
+            print 'current_state:', str(current_state)
+            X.append(tuple(current_state))
             #
             next_action_msg = action()
             next_action_name, next_segment = Find_Action(best_plan,current_state)
@@ -69,8 +72,8 @@ def plan_execution():
                 next_actstr += s
             next_action_msg.header = t
             next_action_msg.name = next_actstr
-            print 'Next action: %s' %next_actstr
-            U.append(next_action_name)
+            print '=====Next action: %s at stage %s=====' %(next_actstr, str(t))
+            U.append(str(next_action_name))
             #
             status_msg = status()
             labelset = set(current_state[1])
@@ -93,18 +96,17 @@ def plan_execution():
             #    
             rospy.sleep(1)
             t += 1
-            print 'System trajectory:', X
-            print 'Control actions:', U
-            pickle.dump((X,U), open("results_X_U.p","wb"))                
             print 'Action %s done!' %next_actstr
             print 'Robot cell pose: %s' %str(cell_pose_data)
-            next_state = current_state[:]
-            next_state = Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose_data)
-            current_state = next_state[:]
+            next_state = Find_Next_State(prod_dra_edges, tuple(current_state), next_action_name, cell_pose_data)
+            current_state = tuple(next_state)
+            print 'Next state %s' %str(current_state)
         except rospy.ROSInterruptException:
-            print 'System trajectory:', X
-            print 'Control actions:', U
-            pickle.dump((X,U), open("results_X_U.p","wb"))
+            print 'Node closing down'
+            pass
+    print 'System trajectory:', X
+    print 'Control actions:', U
+    pickle.dump((X,U), open("results_X_U.p","wb"))        
 
 
 def Find_Action(best_plan, prod_state):
@@ -148,10 +150,15 @@ def Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose):
     k = -1
     for (f_state, t_state) in prod_dra_edges.iterkeys():
         if f_state == current_state:
+            # print 'edge:', (f_state, t_state)
             prop = prod_dra_edges[(f_state, t_state)]
-            if ((next_action_name in prop.keys()) and (t_state[0] == cell_pose)):
+            # print 'prop of edge:', prop
+            # print 'next_action_name', next_action_name
+            if ((next_action_name in prop.keys()) and (t_state[0] == tuple(cell_pose))):
                 S.append(t_state)
                 P.append(prop[next_action_name][0])
+                # print 'S:', S
+                # print 'P:', P
     rdn = random.random()
     pc = 0
     for k, p in enumerate(P):
@@ -161,6 +168,9 @@ def Find_Next_State(prod_dra_edges, current_state, next_action_name, cell_pose):
     if k >= 0:
         next_state = tuple(S[k])
     else:
+        print '----------------------------------------'
+        print 'check your plan, NO next state can be found!!!'
+        print '----------------------------------------'        
         next_state = current_state
     return next_state
 

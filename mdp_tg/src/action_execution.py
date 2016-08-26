@@ -40,7 +40,7 @@ def raw_pose_callback(data):
 
 
     
-def action_execution(robot_name='Brain2'):
+def action_execution(robot_name='Brain5'):
     global next_action_data
     global raw_pose_data
     global cell_pose_data
@@ -57,6 +57,7 @@ def action_execution(robot_name='Brain2'):
     x_min = min(states_x)
     y_max = max(states_y)
     y_min = min(states_y)
+    print 'xy_max', x_max, x_min, y_max, y_min
     ###### publish to
     confirmation_pub = rospy.Publisher('action_done', confirmation, queue_size=100)
     cell_pose_pub = rospy.Publisher('robot_cell_pose', cell_pose, queue_size=100)
@@ -88,12 +89,6 @@ def action_execution(robot_name='Brain2'):
     #### 
     while not rospy.is_shutdown():
         reached = False
-        cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
-        cell_pose_msg = cell_pose()
-        cell_pose_msg.x = cell_pose_data[0]
-        cell_pose_msg.y = cell_pose_data[1]
-        cell_pose_msg.orientation = cell_pose_data[2]
-        cell_pose_pub.publish(cell_pose_msg)
         if next_action_data[0] == t:
             print 'Next action %s received at time %s' %(next_action_data[1], next_action_data[0])
             action_name = next_action_data[1]
@@ -113,6 +108,12 @@ def action_execution(robot_name='Brain2'):
                         print 'Goal pose: %s' %str(goal_pose)
                         print 'Control cmds published: %s' %str((linearVelo, angularVelo))
                     rospy.sleep(0.5) # TODO: check how fast the input can change
+                    cell_pose_data = Raw_To_Cell_Pose(raw_pose_data, grid)
+                    cell_pose_msg = cell_pose()
+                    cell_pose_msg.x = cell_pose_data[0]
+                    cell_pose_msg.y = cell_pose_data[1]
+                    cell_pose_msg.orientation = cell_pose_data[2]
+                    cell_pose_pub.publish(cell_pose_msg)
                 else:
                     break
             print '===========Goal pose reached: %s==========' %(str(goal_pose))
@@ -180,7 +181,7 @@ def Find_Goal(cell_pose, grid, action_name):
     elif action_name == 'ST':
         # create uncertainty in the ST action        
         P = [1.0]
-        U = [(0, 0, 0)]
+        G = [(0, 0, 0)]
     # find possible goal
     rdn = random.random()
     pc = 0
@@ -196,7 +197,10 @@ def Find_Goal(cell_pose, grid, action_name):
     elif orientation == 'S':
         start_pose = [x, y, -0.5*PI]
     elif orientation == 'W':
-        start_pose = [x, y, 0.95*PI]        
+        start_pose = [x, y, 0.98*PI]
+    print '----------------------------------------'
+    print 'start_pose: %s, G_pose: %s' %(str(start_pose), str(G_pose))
+    print '----------------------------------------'
     goal_pose = [start_pose[i]+G_pose[i] for i in xrange(0,3)]
     if goal_pose[2] > 1.0*PI:
         goal_pose[2] -= 2.0*PI
@@ -221,7 +225,7 @@ def  Find_Control(raw_pose, goal_pose):
     ANGULAR_V = 0.2   #rad/s
     angular_V = 0.0
     linear_V = 0.0
-    d_bound = 0.3
+    d_bound = 0.2
     theta_bound = 0.15*PI
     reached = False
     [s_x, s_y, s_theta] = raw_pose

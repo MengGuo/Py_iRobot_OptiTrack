@@ -80,6 +80,7 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     xl = raw_pose[0]
     yl = raw_pose[1]
     dl = raw_pose[2]
+    Ecolor = 'green'
     if m == 0:
         Ecolor = 'green'
     elif m == 1:
@@ -89,7 +90,7 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     elif m > 2:
         Ecolor = 'magenta'
     car=[(xl-0.1,yl-0.1), (xl-0.1,yl+0.1), (xl, yl+0.2), (xl+0.1, yl+0.1), (xl+0.1,yl-0.1)]
-    polygon2 = Polygon(car, fill = True, facecolor='black', edgecolor='black', lw=5, zorder = 2)
+    polygon2 = Polygon(car, fill = True, facecolor=Ecolor, edgecolor=Ecolor, lw=5, zorder = 2)
     ts = ax.transData
     coords = ts.transform([xl, yl])
     tr = matplotlib.transforms.Affine2D().rotate_deg_around(coords[0], coords[1], dl*180/3.14 -90)

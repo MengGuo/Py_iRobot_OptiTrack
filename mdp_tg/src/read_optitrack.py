@@ -21,7 +21,8 @@ def OptiTrackCallback(optidata):
     x = -optidata.position.x
     y = -optidata.position.y
     z = optidata.position.z
-    theta = atan2(sin(optidata.orientation.z+PI),cos(optidata.orientation.z+PI));
+    #theta = atan2(sin(optidata.orientation.z+PI),cos(optidata.orientation.z+PI));
+    theta = atan2(sin(optidata.orientation.z),cos(optidata.orientation.z))
     Id = optidata.id
     position[Id] = [x, y, theta]
     #print 'position keys:', position.keys()
@@ -54,6 +55,7 @@ def read_optitrack(robot_id):
             #print 'Error: robot_id not in optitrack publish list'
             rospy.sleep(0.1)
     pickle.dump(XX, open("results_XX.p","wb"))
+    print 'Robot complete trajectory:', XX
     print 'Read Optitrack node shut down'
 
 
