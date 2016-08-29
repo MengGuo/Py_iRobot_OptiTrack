@@ -19,7 +19,7 @@ import optitrack_driver.msg
 def OptiTrackCallback(optidata):
     global position
     x = -optidata.position.x
-    y = -optidata.position.y
+    y = -optidata.position.y + 0.3
     z = optidata.position.z
     #theta = atan2(sin(optidata.orientation.z+PI),cos(optidata.orientation.z+PI));
     theta = atan2(sin(optidata.orientation.z),cos(optidata.orientation.z))

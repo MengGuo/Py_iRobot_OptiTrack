@@ -73,7 +73,7 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
         car=[(xl+0.1,yl+0.1), (xl+0.1,yl-0.1), (xl, yl-0.2), (xl-0.1, yl-0.1), (xl-0.1,yl+0.1)]
     elif dl == 'W':
         car=[(xl+0.1,yl-0.1), (xl-0.1,yl-0.1), (xl-0.2, yl), (xl-0.1, yl+0.1), (xl+0.1,yl+0.1)]
-    polygon = Polygon(car, fill = False, facecolor='grey', edgecolor='black', lw=2, zorder = 2)
+    polygon = Polygon(car, fill = False, facecolor='grey', edgecolor='black', linestyle='dashed', lw=1.5, zorder = 2)
     ax.add_patch(polygon)
     #----- draw the robot raw_pose
     print 'robot raw pose', raw_pose
@@ -98,15 +98,16 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     polygon2.set_transform(t)
     ax.add_patch(polygon2)    
     #
+    u = tuple(u)
     actstr = r''
     for s in u:
         actstr += s
-    ax.text(xl, yl+0.2, r'$%s$' %str(actstr), fontsize = 16, fontweight = 'bold', color='red')
+    ax.text(xl, yl+0.15, r'$%s$' %str(actstr), fontsize = 16, fontweight = 'bold', color='red')
     # plot shadow
     x = cell_pose[:]
     t_x_list = []
     for (f_x, t_x) in motion_mdp_edges.iterkeys():
-        if f_x == x:            
+        if f_x == tuple(x):
             prop = motion_mdp_edges[(f_x, t_x)]
             if u in prop.keys():
                 t_x_list.append((t_x, prop[u][0]))
@@ -123,10 +124,10 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
             car=[(xl+0.1,yl+0.1), (xl+0.1,yl-0.1), (xl, yl-0.2), (xl-0.1, yl-0.1), (xl-0.1,yl+0.1)]
         elif dl == 'W':
             car=[(xl+0.1,yl-0.1), (xl-0.1,yl-0.1), (xl-0.2, yl), (xl-0.1, yl+0.1), (xl+0.1,yl+0.1)]
-        polygon = Polygon(car, fill = True, facecolor='grey', edgecolor='grey', lw=5, zorder = 1, alpha=0.5)
+        polygon = Polygon(car, fill = False, hatch = 'x', edgecolor='grey', lw=5, zorder = 1, alpha=0.5)
         ax.add_patch(polygon)
         prob = new_x[1]
-        ax.text(xl, yl, r'$%s$' %str(prob), fontsize = 10, fontweight = 'bold', color='red')                
+        ax.text(xl, yl, r'$%s$' %str(prob), fontsize = 15, fontweight = 'bold', color='red')                
     #---------------- draw the workspace
     for node, prop in WS_node_dict.iteritems():
         if node != (x[0], x[1]):

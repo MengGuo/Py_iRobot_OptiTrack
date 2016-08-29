@@ -99,7 +99,7 @@ def action_execution(robot_name='Brain5'):
                 if not reached:
                     # send control msg
                     # print 'Navigation to goal'
-                    linearVelo, angularVelo, reached = Find_Control(raw_pose_data, goal_pose)
+                    linearVelo, angularVelo, reached = Find_Control(raw_pose_data, action_name, goal_pose)
                     control_msg = geometry_msgs.msg.Twist()
                     control_msg.linear.x = linearVelo
                     control_msg.angular.z = angularVelo
@@ -219,21 +219,30 @@ def Find_Goal(cell_pose, grid, action_name):
 
 
 
-def  Find_Control(raw_pose, goal_pose):
+def  Find_Control(raw_pose, action_name, goal_pose):
     # turn-and-forward-turn controller
-    LINEAR_V = 0.1     #m/s
-    ANGULAR_V = 0.2   #rad/s
+    LINEAR_V = 0.2     #m/s
+    ANGULAR_V = 0.35   #rad/s
     angular_V = 0.0
     linear_V = 0.0
-    d_bound = 0.2
+    d_bound = 0.1
     theta_bound = 0.15*PI
     reached = False
+    if random.random()>0.8:
+        print 'Action to perform: %s' %action_name
     [s_x, s_y, s_theta] = raw_pose
     [g_x, g_y, g_theta] = goal_pose
-    face = atan2(g_y-s_y, g_x-s_x)
+    if action_name != 'BK':
+        face = atan2(g_y-s_y, g_x-s_x)
+    else:
+        face = atan2(g_y-s_y, g_x-s_x) + PI
+        if face > PI:
+            face -= 2*PI
+        elif face < -PI:
+            face += 2*PI
     theta_dif = s_theta-face
     orientation_dif = s_theta-g_theta
-    if ((distance((s_x,s_y), (g_x,g_y)) > d_bound) and (abs(theta_dif) > theta_bound)):
+    if (((action_name =='FR') or (action_name =='BK')) and (distance((s_x,s_y), (g_x,g_y)) > d_bound) and (abs(theta_dif) > theta_bound)):
         if random.random()>0.8:
             print 'Turn to face the goal, distance error: %s, face error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(-theta_dif))
         if ((0 < theta_dif < 1.0*PI) or (-2.0*PI < theta_dif < -1.0*PI)):
@@ -243,7 +252,10 @@ def  Find_Control(raw_pose, goal_pose):
     elif ((distance((s_x,s_y), (g_x,g_y)) > d_bound) and (abs(theta_dif) < theta_bound)):
         if random.random()>0.8:        
             print 'Forward to the goal, distance error: %s, face error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(theta_dif))
-        linear_V = LINEAR_V
+        if action_name != 'BK':
+            linear_V = LINEAR_V
+        if action_name == 'BK':
+            linear_V = -LINEAR_V            
     elif ((distance((s_x,s_y), (g_x,g_y)) < d_bound) and (abs(orientation_dif) > theta_bound)):
         if random.random()>0.8:        
             print 'Turn to right orientation, distance error: %s, orientation error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(-orientation_dif))
@@ -286,6 +298,6 @@ def Raw_To_Cell_Pose(raw_pose, grid):
 if __name__ == '__main__':
     ###############
     try:
-        action_execution(robot_name='Brain2')
+        action_execution(robot_name='Brain5')
     except rospy.ROSInterruptException:
         pass
