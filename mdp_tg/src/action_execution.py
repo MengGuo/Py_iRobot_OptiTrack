@@ -157,7 +157,8 @@ def Find_Goal(cell_pose, grid, action_name):
             G = [(-grid, -grid, 0), (0, -grid, 0), (grid, -grid, 0)]
     elif action_name == 'BK':
         # create uncertainty in the BK action
-        P = [0.15, 0.7, 0.15]
+        P = [0.25, 0.25, 0.5]
+        #P = [0.15, 0.7, 0.15]
         #if -0.25*PI <= theta <= 0.25*PI:
         if orientation == 'E':
             G = [(-grid, -grid, 0), (-grid, 0, 0), (-grid, grid, 0)]
@@ -169,7 +170,7 @@ def Find_Goal(cell_pose, grid, action_name):
             G = [(grid, -grid, 0), (grid, 0, 0), (grid, grid, 0)]
         #elif -0.75*PI <= theta <= -0.25*PI:
         elif orientation == 'S':
-            G = [(-grid, grid, 0), (0, grid, 0), (grid, grid, 0)]
+            G = [(grid, grid, 0), (0, grid, 0), (-grid, grid, 0)]
     elif action_name == 'TR':
         # create uncertainty in the TR action
         P = [0.05, 0.9, 0.05]
@@ -230,6 +231,7 @@ def  Find_Control(raw_pose, action_name, goal_pose):
     reached = False
     if random.random()>0.8:
         print 'Action to perform: %s' %action_name
+        print 'raw_pose', raw_pose
     [s_x, s_y, s_theta] = raw_pose
     [g_x, g_y, g_theta] = goal_pose
     if action_name != 'BK':
@@ -256,7 +258,8 @@ def  Find_Control(raw_pose, action_name, goal_pose):
             linear_V = LINEAR_V
         if action_name == 'BK':
             linear_V = -LINEAR_V            
-    elif ((distance((s_x,s_y), (g_x,g_y)) < d_bound) and (abs(orientation_dif) > theta_bound)):
+    #elif ((distance((s_x,s_y), (g_x,g_y)) < d_bound) and (abs(orientation_dif) > theta_bound)):
+    elif ((abs(orientation_dif) > theta_bound)):            
         if random.random()>0.8:        
             print 'Turn to right orientation, distance error: %s, orientation error: %s' %(str(distance((s_x,s_y), (g_x,g_y))), str(-orientation_dif))
         if ((0 < orientation_dif < 1.0*PI) or (-2.0*PI < orientation_dif < -1.0*PI)):
@@ -265,6 +268,8 @@ def  Find_Control(raw_pose, action_name, goal_pose):
             angular_V = ANGULAR_V
     else:
         print 'Goal reached!'
+        print 'distance', distance((s_x,s_y), (g_x,g_y))
+        print 'orientation error', orientation_dif
         reached = True
     return linear_V, angular_V, reached
 

@@ -4,7 +4,7 @@ from numpy import random
 import Queue
 roslib.load_manifest('mdp_tg')
 import rospy
-from mdp_tg.msg import raw_pose, status, cell_pose
+from mdp_tg.msg import raw_pose, status, cell_pose, confirmation
 from math import sqrt, cos, sin, radians
 
 import sys
@@ -18,6 +18,12 @@ from matplotlib.patches import Polygon
 from load_model import motion_mdp_edges, WS_d, WS_node_dict
 
 
+def confirm_callback(data):
+    global confirm_data    
+    header = data.header
+    name = data.name
+    done = data.done
+    confirm_data = [header, name, done]
 
 
 def raw_pose_callback(data):
@@ -47,7 +53,7 @@ def status_callback(data):
     # print 'Robot status received: %s' %str(status_data)
 
 
-def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status):
+def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, cell_pose, status, show_next):
     pyplot.cla()
     fig = figure
     ax = fig.add_subplot(111)
@@ -109,7 +115,7 @@ def visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose, 
     for (f_x, t_x) in motion_mdp_edges.iterkeys():
         if f_x == tuple(x):
             prop = motion_mdp_edges[(f_x, t_x)]
-            if u in prop.keys():
+            if (show_next and (u in prop.keys())):
                 t_x_list.append((t_x, prop[u][0]))
     #
     for new_x in t_x_list:
@@ -182,24 +188,41 @@ def plot_workspace():
     global raw_pose_data
     global status_data
     global cell_pose_data
+    global confirm_data
     rospy.init_node('plot_workspace')
     print 'Plot workspace node started!'
     ##### initilzation
     raw_pose_data = [0.25, 0.25, 0.0]
     cell_pose_data = [0.25, 0.25, 'E']
-    status_data = ['None', 'None', 0]    
+    cell_pose_true = [0.25, 0.25, 'E']
+    status_data = ['None', 'None', 0]
+    confirm_data = [0, ]*3
+    show_next = True
+    t = 0
+    T = 0
     ###### subscribe to
     rospy.Subscriber('robot_raw_pose', raw_pose, raw_pose_callback)
     rospy.Subscriber('robot_status', status, status_callback)
     rospy.Subscriber('robot_cell_pose', cell_pose, cell_pose_callback)
+    rospy.Subscriber('action_done', confirmation, confirm_callback)
     ##### plot workspace
     figure = pyplot.figure()
     pyplot.ion()
     pyplot.draw()
     rospy.sleep(2)
     while not rospy.is_shutdown():
+        T -= 1
+        if confirm_data[0] == t:
+            t += 1
+            cell_pose_true = cell_pose_data
+            show_next = False
+            T = 1            
+        elif (T< 0):
+            show_next = True
+        elif (T>=0):
+            show_next = False
         try:
-           figure = visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose_data, cell_pose_data, status_data)
+           figure = visualize_workspace(figure, motion_mdp_edges, WS_d, WS_node_dict, raw_pose_data, cell_pose_true, status_data, show_next)
         except rospy.ROSInterruptException:
             print 'Visualization workspace stopped'
 
