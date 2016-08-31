@@ -44,17 +44,17 @@ To Run
 
 * Since we are running ROS across multiple machines, follow [this tutorial](http://wiki.ros.org/ROS/Tutorials/MultipleMachines). We recommend running ROS core at (U).
 
-* In [optitrack/optitrack.launch], specify the name of the rigid bodies and the chosen unique *numeric_id* for EACH rigid body you want to track. Then  ```python roslaunch optitrack.launch``` at (U). 
+* In [optitrack/optitrack.launch], specify the name of the rigid bodies and the chosen unique *numeric_id* for EACH rigid body you want to track. Then  ```roslaunch optitrack.launch``` at (U). 
 
-* SSH into the compute of (I), make sure the package [irobot_create_2_1] is compiled at (I) using ```python catkin_make```. Then ```python roslaunch irobot.launch robotname:='Brain2'```, where *'Brain2'* is the name of the iRobot (which can be different from the rigid-body name).
+* SSH into the compute of (I), make sure the package [irobot_create_2_1] is compiled at (I) using ```catkin_make```. Then ```roslaunch irobot.launch robotname:='Brain2'```, where *'Brain2'* is the name of the iRobot (which can be different from the rigid-body name).
 
-* Try to control the iRobot manually, e.g., ```python rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
+* Try to control the iRobot manually, e.g., ```rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
 
 * In [mdp_tg/src/simple_irobot_control_optitrack.py], specify the sequence of *RO_ID* and *RO_NAME* according to the *numeric_id* and *robotname* you have specified.
 
   The control algorithm now is simply "rotate-forward-rotate", which can be changed to yours. Also change the sequence of goal regions as you like.
   
-  Then run with ```python python simple_irobot_control_optitrack.py```
+  Then run with ```python simple_irobot_control_optitrack.py```
 
 * For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm.
 
@@ -71,7 +71,7 @@ To Run
 ----
 Trouble Shooting
 ----
-* When installing vrpn, if errors about "Could NOT find Bullet...." show up, try ```python rosdep install --from-paths ~/catkin_ws --ignore-src --rosdistro=indigo```
+* When installing vrpn, if errors about "Could NOT find Bullet...." show up, try ```rosdep install --from-paths ~/catkin_ws --ignore-src --rosdistro=indigo```
 
 * Remember to change the *vrpn_server_ip* in [optitrack/optitrack.launch].
 
