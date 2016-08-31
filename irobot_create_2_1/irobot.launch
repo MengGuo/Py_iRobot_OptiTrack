@@ -1,7 +1,10 @@
 <launch>
-
+  
   <!-- irobot_create_2_1 -->
+
   <node pkg="irobot_create_2_1" type="driver.py" name="brain2driver" output="screen">
+
+  <param name="robotname" value="Brain2"/>
   </node>
 
 </launch>

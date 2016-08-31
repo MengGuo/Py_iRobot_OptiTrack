@@ -137,7 +137,9 @@ class CreateDriver:
 if __name__ == '__main__':
 	node = rospy.init_node('create')
 	driver = CreateDriver()
-	
+
+        robotname = rospy.get_param('/irobot_create_2_1/robotname')
+        
 	rospy.Service('brake',Brake,driver.brake)
 	rospy.Service('circle',Circle,driver.circle)
 	rospy.Service('demo',Demo,driver.demo)
@@ -145,7 +147,7 @@ if __name__ == '__main__':
 	rospy.Service('tank',Tank,driver.tank)
 	rospy.Service('turn',Turn,driver.turn)
 
-	rospy.Subscriber("Brain2/cmd_vel", Twist, driver.twist)
+	rospy.Subscriber("%s/cmd_vel" %robotname, Twist, driver.twist)
 
 	sleep(1)
 	driver.start()

@@ -111,7 +111,7 @@ figure = pyplot.figure()
 pyplot.ion()
 pyplot.draw()
 time.sleep(1)
-## agent ID should be in-line with the control.launch and optitrak.launch
+## RO_ID and RO_NAME should be inline with the "numeric_id" from "optitrack.launch" and "robotname" from "irobot.launch".
 RO_ID = [1,]
 RO_NAME = ['Brain2',]
 NO_RS = len(RO_ID)
