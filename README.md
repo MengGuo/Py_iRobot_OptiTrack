@@ -27,9 +27,11 @@ Content
 * [ros_vrpn_client], which is the vrpn client that listens to Motive at (W) that broadcasts rigid body positions over vrpn. It can be directly loaded into the catkin workspace of (U). It requires the installation of vrpn (using "install_vrpn.sh" inside).
 
   Modified based on [ros_vrpn_client from GaTech](https://github.com/gt-ros-pkg/hrl/tree/master/ros_vrpn_client)
+  
 * [optitrack], which retrieves rigid-body positions using "ros_vrpn_client", and transforms quaternions to Euler angles for easy usage later. It can be directly loaded into the catkin workspace of (U).
 
  Modified based on [optitrack from GaTech](https://github.com/gritslab/grits-ros-pkg/tree/master/optitrack)
+ 
  * [mdp_tg], which contains your control algorithms. It can be directly loaded into the catkin workspace of (U).
 
 ----
@@ -51,8 +53,9 @@ To Run
   
   Then run with ```python python simple_irobot_control_optitrack.py```
 
-* For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm. In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
+* For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm.
 
+In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
 ..* [read_optitrack.py] reads a particular irobot position and transform to required format. 
 
 ..* [plan_execution.py] loads the offline plan and decides the next action to perform. 
