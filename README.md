@@ -31,7 +31,7 @@ Content
 
   Modified based on [ros_vrpn_client from GaTech](https://github.com/gt-ros-pkg/hrl/tree/master/ros_vrpn_client)
   
-* [optitrack], which retrieves rigid-body positions using "ros_vrpn_client", and transforms quaternions to Euler angles for easy usage later. It can be directly loaded into the catkin workspace of (U).
+* [optitrack], which retrieves rigid-body positions using [ros_vrpn_client], and transforms quaternions to Euler angles for easy usage later. It can be directly loaded into the catkin workspace of (U).
 
   Modified based on [optitrack from GaTech](https://github.com/gritslab/grits-ros-pkg/tree/master/optitrack)
  
@@ -48,21 +48,21 @@ To Run
 
 * SSH into the compute of (I), make sure the package [irobot_create_2_1] is compiled at (I) using ```catkin_make```. Then ```roslaunch irobot.launch robotname:='Brain2'```, where *'Brain2'* is the name of the iRobot (which can be different from the rigid-body name).
 
-* Try to control the iRobot manually, e.g., ```rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
+  Test by trying to control the iRobot manually at (U), e.g., ```rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
 
 * In [mdp_tg/src/simple_irobot_control_optitrack.py], specify the sequence of *RO_ID* and *RO_NAME* according to the *numeric_id* and *robotname* you have specified.
 
-  The control algorithm now is simply "rotate-forward-rotate", which can be changed to yours. Also change the sequence of goal regions as you like.
+  The control algorithm now is simply "rotate-forward-rotate", which can be changed to your favoriate. Also change the sequence of goal regions as you like.
   
   Then run with ```python simple_irobot_control_optitrack.py```
 
 * For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm.
 
-  In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
+  In this case, an offline discrete plan is loaded and the control action of iRobot is chosen based on the plan.
 
   * [read_optitrack.py] reads a particular irobot position and transform to required format. 
 
-  * [plan_execution.py] loads the offline plan and decides the next action to perform. 
+  * [plan_execution.py] decides the next action to perform, according to the offline plan. 
 
   * [action_execution.py] executes the chosen action.
 
@@ -76,10 +76,10 @@ Trouble Shooting
 * Remember to change the *vrpn_server_ip* in [optitrack/optitrack.launch].
 
 
-* Don't forget to export ROS_IP at ALL machines! check [this tutorial](http://answers.ros.org/question/163556/how-to-solve-couldnt-find-an-af_inet-address-for-problem/)
+* Don't forget to export *ROS_IP* at ALL machines! check [this tutorial](http://answers.ros.org/question/163556/how-to-solve-couldnt-find-an-af_inet-address-for-problem/)
 
 
-* Should hear a melody from iRobot after you successfully launched *irobor.launch*.
+* Should hear a melody from iRobot after you successfully launched *irobot.launch*.
 
 ----
 Experiment videos
