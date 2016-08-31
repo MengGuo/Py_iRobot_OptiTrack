@@ -51,9 +51,7 @@ To Run
   
   Then run with ```python python simple_irobot_control_optitrack.py```
 
-* For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm.
-
-  In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
+* For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm. In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
 
 ..* [read_optitrack.py] reads a particular irobot position and transform to required format. 
 
