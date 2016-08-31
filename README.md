@@ -6,7 +6,7 @@ Python Interface for Controlling iRobots with OptiTrack
 -----
 Description
 -----
-this package contains the Python interface used at the RAMA lab, Duke University. The hardware structure consists of
+this package contains the Python interface used at the RAMA lab of [Prof. Zavlanos](http://people.duke.edu/~mz61/), Duke University. The hardware structure consists of
 * one Windows PC (W), which connects to all OptiTrack cameras and runs program Motive to calibrate and retrieve data from OptiTrack.
 * one Ubuntu machine (U), which runs ROS and does the algorithmic computation to compute the control signals for each iRobot.
 * several iRobots (I), which runs iRobot driver locally, receives control commands from (U) and sends sensory data back to (U).
@@ -16,6 +16,7 @@ Features
 -----
 * Retrieve multiple rigid-body data.
 * Plot real-time positions of all rigid bodies.
+* Can be easily extended to more complicate motion and task planning scenarios. 
 
 -----
 Content
@@ -35,9 +36,12 @@ Content
 To Run
 ----
 * Define the rigid bodies in Motive of (W), with unique names.
+
 * Since we are running ROS across multiple machines, follow [this tutorial](http://wiki.ros.org/ROS/Tutorials/MultipleMachines). We recommend running ROS core at (U).
-* In [optitrack/optitrack.launch], specify the names of the rigid bodies and choose unique "numeric_id" for each rigid body. Then  ```python roslaunch optitrack.launch``` at (U).
-* SSH into the compute of~(I), make sure the package [irobot_create_2_1] is compiled at (I) using *catkin_make*. Then *roslaunch irobot.launch robotname:='Brain2'*, where 'Brain2' is the name of the iRobot (which can be different from the rigid-body name).
+
+* In [optitrack/optitrack.launch], specify the name of the rigid bodies and the chosen unique "numeric_id" for EACH rigid body you want to track. Then  ```python roslaunch optitrack.launch``` at (U). 
+
+* SSH into the compute of~(I), make sure the package [irobot_create_2_1] is compiled at (I) using ```python catkin_make```. Then ```python roslaunch irobot.launch robotname:='Brain2'```, where 'Brain2' is the name of the iRobot (which can be different from the rigid-body name).
 
 * Try to control the iRobot manually, e.g., ```python rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
 
@@ -49,7 +53,7 @@ To Run
 
 * For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm.
 
-In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
+  In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
 
 ..* [read_optitrack.py] reads a particular irobot position and transform to required format. 
 
@@ -63,6 +67,8 @@ In this case, an offline discrete plan is loaded and control action of the iRobo
 Trouble Shooting
 ----
 * When installing vrpn, if errors about "Could NOT find Bullet...." show up, try ```python rosdep install --from-paths ~/catkin_ws --ignore-src --rosdistro=indigo```
+
+* Remember to change the *vrpn_server_ip* in [optitrack/optitrack.launch].
 
 
 * Don't forget to export ROS_IP at ALL machines! check [this tutorial](http://answers.ros.org/question/163556/how-to-solve-couldnt-find-an-af_inet-address-for-problem/)
