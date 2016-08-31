@@ -8,7 +8,9 @@ Description
 -----
 this package contains the Python interface used at the RAMA lab of [Prof. Zavlanos](http://people.duke.edu/~mz61/), Duke University. The hardware structure consists of
 * one Windows PC (W), which connects to all OptiTrack cameras and runs program Motive to calibrate and retrieve data from OptiTrack.
+
 * one Ubuntu machine (U), which runs ROS and does the algorithmic computation to compute the control signals for each iRobot.
+
 * several iRobots (I), which runs iRobot driver locally, receives control commands from (U) and sends sensory data back to (U).
 
 -----
@@ -24,15 +26,16 @@ Content
 * [irobot_create_2_1], which contains iRobot drivers, can be directly loaded to (I).
 
   Modified based on [irobot_create_2_1 from Brown University](http://wiki.ros.org/irobot_create_2_1)
+  
 * [ros_vrpn_client], which is the vrpn client that listens to Motive at (W) that broadcasts rigid body positions over vrpn. It can be directly loaded into the catkin workspace of (U). It requires the installation of vrpn (using "install_vrpn.sh" inside).
 
   Modified based on [ros_vrpn_client from GaTech](https://github.com/gt-ros-pkg/hrl/tree/master/ros_vrpn_client)
   
 * [optitrack], which retrieves rigid-body positions using "ros_vrpn_client", and transforms quaternions to Euler angles for easy usage later. It can be directly loaded into the catkin workspace of (U).
 
- Modified based on [optitrack from GaTech](https://github.com/gritslab/grits-ros-pkg/tree/master/optitrack)
+  Modified based on [optitrack from GaTech](https://github.com/gritslab/grits-ros-pkg/tree/master/optitrack)
  
- * [mdp_tg], which contains your control algorithms. It can be directly loaded into the catkin workspace of (U).
+* [mdp_tg], which contains your control algorithms. It can be directly loaded into the catkin workspace of (U).
 
 ----
 To Run
@@ -41,13 +44,13 @@ To Run
 
 * Since we are running ROS across multiple machines, follow [this tutorial](http://wiki.ros.org/ROS/Tutorials/MultipleMachines). We recommend running ROS core at (U).
 
-* In [optitrack/optitrack.launch], specify the name of the rigid bodies and the chosen unique "numeric_id" for EACH rigid body you want to track. Then  ```python roslaunch optitrack.launch``` at (U). 
+* In [optitrack/optitrack.launch], specify the name of the rigid bodies and the chosen unique *numeric_id* for EACH rigid body you want to track. Then  ```python roslaunch optitrack.launch``` at (U). 
 
-* SSH into the compute of~(I), make sure the package [irobot_create_2_1] is compiled at (I) using ```python catkin_make```. Then ```python roslaunch irobot.launch robotname:='Brain2'```, where 'Brain2' is the name of the iRobot (which can be different from the rigid-body name).
+* SSH into the compute of (I), make sure the package [irobot_create_2_1] is compiled at (I) using ```python catkin_make```. Then ```python roslaunch irobot.launch robotname:='Brain2'```, where *'Brain2'* is the name of the iRobot (which can be different from the rigid-body name).
 
 * Try to control the iRobot manually, e.g., ```python rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
 
-* In [mdp_tg/src/simple_irobot_control_optitrack.py], specify the sequence of "RO_ID" and "RO_NAME" according to the "numeric_id" and "robotname" you have specified.
+* In [mdp_tg/src/simple_irobot_control_optitrack.py], specify the sequence of *RO_ID* and *RO_NAME* according to the *numeric_id* and *robotname* you have specified.
 
   The control algorithm now is simply "rotate-forward-rotate", which can be changed to yours. Also change the sequence of goal regions as you like.
   
@@ -55,14 +58,15 @@ To Run
 
 * For other python files in [mdp_tg], it serves as an example of the structure when you have more complicate control algorithm.
 
-In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
-..* [read_optitrack.py] reads a particular irobot position and transform to required format. 
+  In this case, an offline discrete plan is loaded and control action of the iRobot is chosen based on the plan.
 
-..* [plan_execution.py] loads the offline plan and decides the next action to perform. 
+  * [read_optitrack.py] reads a particular irobot position and transform to required format. 
 
-..* [action_execution.py] executes the chosen action.
+  * [plan_execution.py] loads the offline plan and decides the next action to perform. 
 
-..* [plot_workspace.py] visualizes the workspace, robot motion and the plan execution in real-time.
+  * [action_execution.py] executes the chosen action.
+
+  * [plot_workspace.py] visualizes the workspace, robot motion and the plan execution in real-time.
 
 ----
 Trouble Shooting
