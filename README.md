@@ -20,10 +20,7 @@ Features
 * Plot real-time positions of all rigid bodies.
 * Can be easily extended to more complicate motion and task planning scenarios.
 
-Multi-robot layout         |  Visualization Panel
-:-------------------------:|:-------------------------:
-![](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/layout.jpg =250x)  |  ![](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/plot.png =250x)
-
+<img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/layout.jpg" width="425"/> <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/plot.png" width="425"/> 
 
 -----
 Content
@@ -73,7 +70,8 @@ To Run
 
   * [plot_workspace.py] visualizes the workspace, robot motion and the plan execution in real-time.
 
-![Experiment snapshot](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/mdp_tg.png =500x)
+  <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/mdp_tg.png" width="425"/>
+  
 ----
 Trouble Shooting
 ----
