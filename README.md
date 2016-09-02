@@ -84,4 +84,7 @@ Trouble Shooting
 ----
 Experiment videos
 ----
-Some experiment videos can be found [here](https://www.google.com)
+Some experiment videos can be found [Video1](https://vimeo.com/180983006), [Video2](https://vimeo.com/180985419), [Video3](https://vimeo.com/180987471).
+
+
+
