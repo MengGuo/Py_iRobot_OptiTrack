@@ -138,7 +138,7 @@ if __name__ == '__main__':
 	node = rospy.init_node('create')
 	driver = CreateDriver()
 
-        robotname = rospy.get_param('/irobot_create_2_1/robotname')
+        robotname = rospy.get_param('/robotname')
         
 	rospy.Service('brake',Brake,driver.brake)
 	rospy.Service('circle',Circle,driver.circle)

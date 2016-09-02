@@ -5,8 +5,23 @@ Here add all the instances of optitrack objects to be tracked. The node name mus
 -->	
 	<node name="Brain5Camera" pkg="optitrack_driver" type = "optitrack"> 
 		<param name="vrpn_server_ip" value="192.168.1.103" />
+		<param name="numeric_id" value="5" />
+	</node>
+
+	<node name="Brain2Camera" pkg="optitrack_driver" type = "optitrack"> 
+		<param name="vrpn_server_ip" value="192.168.1.103" />
+		<param name="numeric_id" value="2" />
+	</node>
+
+	<node name="Brain1Camera" pkg="optitrack_driver" type = "optitrack"> 
+		<param name="vrpn_server_ip" value="192.168.1.103" />
 		<param name="numeric_id" value="1" />
 	</node>
+
+	<node name="Brain6Camera" pkg="optitrack_driver" type = "optitrack"> 
+		<param name="vrpn_server_ip" value="192.168.1.103" />
+		<param name="numeric_id" value="6" />
+	</node>			
 
 </launch>
 	
