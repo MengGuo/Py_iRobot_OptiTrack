@@ -20,7 +20,9 @@ Features
 * Plot real-time positions of all rigid bodies.
 * Can be easily extended to more complicate motion and task planning scenarios.
 
-<img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/layout.jpg" width="425"/> <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/plot.png" width="425"/> 
+<p align="center">  
+  <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/combined.png" width="500"/>
+</p>
 
 -----
 Content
