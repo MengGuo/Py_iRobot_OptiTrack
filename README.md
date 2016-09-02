@@ -21,7 +21,7 @@ Features
 * Can be easily extended to more complicate motion and task planning scenarios.
 
 <p align="center">  
-  <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/combined.png" width="500"/>
+  <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/combined.png" width="800"/>
 </p>
 
 -----
