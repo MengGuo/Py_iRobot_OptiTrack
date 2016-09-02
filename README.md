@@ -70,8 +70,10 @@ To Run
 
   * [plot_workspace.py] visualizes the workspace, robot motion and the plan execution in real-time.
 
-  <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/mdp_tg.png" width="425"/>
-  
+<p align="center">  
+  <img src="https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/mdp_tg.png" width="500"/>
+</p>
+
 ----
 Trouble Shooting
 ----
