@@ -22,7 +22,7 @@ Features
 
 Multi-robot layout         |  Visualization Panel
 :-------------------------:|:-------------------------:
-![](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/layout.jpg)  |  ![](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/plot.png)
+![](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/layout.jpg =250x)  |  ![](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/plot.png =250x)
 
 
 -----
@@ -73,7 +73,7 @@ To Run
 
   * [plot_workspace.py] visualizes the workspace, robot motion and the plan execution in real-time.
 
-![Experiment snapshot](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/mdp_tg.png)
+![Experiment snapshot](https://github.com/MengGuo/Py_iRobot_OptiTrack/blob/master/figures/mdp_tg.png =500x)
 ----
 Trouble Shooting
 ----
