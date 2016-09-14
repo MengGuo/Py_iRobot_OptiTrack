@@ -44,13 +44,13 @@ Content
 ----
 To Run
 ----
-* Define the rigid bodies in Motive of (W), with unique names.
+* Define the rigid bodies in ```Motive``` of (W), with unique names.
 
 * Since we are running ROS across multiple machines, follow [this tutorial](http://wiki.ros.org/ROS/Tutorials/MultipleMachines). We recommend running ROS core at (U).
 
 * In [optitrack/optitrack.launch], specify the name of the rigid bodies and the chosen unique *numeric_id* for EACH rigid body you want to track. Then  ```roslaunch optitrack.launch``` at (U). 
 
-* SSH into the compute of (I), make sure the package [irobot_create_2_1] is compiled at (I) using ```catkin_make```. Then ```roslaunch irobot.launch robotname:='Brain2'```, where *'Brain2'* is the name of the iRobot (which can be different from the rigid-body name).
+* SSH into the compute of (I), make sure the package [irobot_create_2_1] is compiled at (I) using ```catkin_make```. Then ```roslaunch irobot.launch robotname:='Brain2'```, where *'Brain2'* is the name of the iRobot (which can be different from the rigid-body name). Or see the end for a less flexible but easier way.
 
   Test by trying to control the iRobot manually at (U), e.g., ```rostopic pub /Brain2/cmd_vel geometry_msgs/Twist -r 1 -- '[2.0, 0.0, 0.0]' '[0.0, 0.0, -1.8]'```
 
@@ -96,3 +96,15 @@ Some experiment videos can be found [Video1](https://vimeo.com/180983006), [Vide
 
 
 
+----
+Detailed Steps for Duke RAMA Setup
+----
+
+* at (W), open application ```Motive``` and load the lastest calibration.
+
+* at (U), do the following in the ```Terminal```:
+
+  * Launch ros core by ```roscore```
+  * Listen to Optitrack by ```cd catkin_ws/src/optitrack/``` and ```roslaunch optitrack.launch```
+  * Start visualization and control by ```cd catkin_ws/src/mdp_tg/src/``` and ```python simple_irobot_control_optitrack.py```
+  * Start iRobot driver by ```ssh -XY dukerama@Brain2.local```, ```cd catkin_ws/src/inter_commu/launch/``` and ```roslaunch test.launch```. Make sure you hear a melody, otherwise something is wrong, e.g., check the battery.
